@@ -1,0 +1,31 @@
+# Scripts, the REPL, and the `__main__` mystery
+
+There are three ways Python code runs in the wild:
+
+- **A script**: `python file.py` — top to bottom, then the process exits.
+- **The REPL**: type `python` alone and you get an interactive prompt (`>>>`) that
+  evaluates each line as you enter it and *prints bare expression values back at you*.
+  Scripts don't do that — in a script, an un-printed value just evaporates.
+- **A notebook**: a REPL wearing a lab coat. Same rules, fancier clothes.
+
+This editor behaves like a **script**: if you want to see a value, `print()` it or check
+the workspace panel.
+
+And now the incantation you've pasted a hundred times without mercy or meaning:
+
+```python
+if __name__ == "__main__":
+    print("running as a script")
+```
+
+`__name__` is not magic — it is **a variable that already exists**, and you can print it.
+When a file runs as a script, Python sets it to the string `"__main__"`. When the same
+file is *imported* by another file, it's set to the module's name instead. So that famous
+`if` just asks: "am I the file being run, or am I being borrowed?"
+
+<LangContrast lang="js">
+It answers the same question as Node's `require.main === module` — "am I the entry
+point?" — but by a different route: Node compares two module *objects* by identity,
+Python compares a plain *string* in a variable you can inspect like any other. Print it.
+Demystification by `print()` is a legitimate debugging school.
+</LangContrast>

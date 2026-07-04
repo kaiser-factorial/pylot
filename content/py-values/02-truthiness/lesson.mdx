@@ -1,0 +1,27 @@
+# Booleans, None, and what counts as true
+
+Python's booleans are `True` and `False` — **capitalized**, because they're proper nouns
+here. Comparisons produce them: `==`, `!=`, `<`, `>=` all evaluate to a real `bool` you
+can store and print.
+
+`None` is the deliberate nothing: "no value here, and I mean it." The idiomatic test is
+identity, not equality:
+
+```python
+copilot = None
+if copilot is None:
+    print("single seat today")
+```
+
+<LangContrast lang="js">
+Four rewirings at once. (1) `true`/`false` → `True`/`False` — lowercase `true` is a
+`NameError`, Python thinks it's some variable you forgot to define. (2) There is **no
+`===`**. Python's `==` doesn't do type coercion, so it already behaves like the strict
+equality you moved to `===` to get; `is` exists for identity, which you mostly use with
+`None`. (3) `null` and `undefined` collapse into one honest `None`. (4) Truthiness has a
+land mine: **empty array `[]` and empty object `{}` are truthy in JS but falsy in
+Python**. `if []:` never runs. That last one causes real bugs in real data code.
+</LangContrast>
+
+The falsy club is short: `False`, `None`, `0`, `0.0`, `""`, and every empty collection
+(`[]`, `{}`, `()`…). Everything else is truthy. `bool(x)` shows you any value's verdict.

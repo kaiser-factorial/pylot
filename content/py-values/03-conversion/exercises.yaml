@@ -1,0 +1,149 @@
+exercises:
+  - id: py-values/03-conversion/01-predict-rebind
+    title: "Predict: the label moves"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      Same variable, three assignments, three types. Predict all three lines
+      exactly — `type()` prints in its fussy `<class '...'>` costume.
+    concepts: [dynamic-typing, variables, printing]
+    starter_code: |
+      payload = 42
+      print(type(payload))
+      payload = "forty-two"
+      print(type(payload))
+      payload = 42.0
+      print(type(payload))
+    reference_solution: |
+      payload = 42
+      print(type(payload))
+      payload = "forty-two"
+      print(type(payload))
+      payload = 42.0
+      print(type(payload))
+    checks:
+      - type: stdout
+        equals: |
+          <class 'int'>
+          <class 'str'>
+          <class 'float'>
+    hints:
+      - "Assignment rebinds the name — the old type is simply gone."
+      - "The shapes are <class 'int'>, <class 'str'>, <class 'float'>."
+
+  - id: py-values/03-conversion/02-strings-to-math
+    title: Data arrives as strings
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Sensor readings always arrive as text — that's the universal law of
+      other people's data. Convert the two readings to numbers and store
+      their sum in `total_feet` (an int, 25500).
+    concepts: [type-conversion, numbers]
+    starter_code: |
+      reading_a = "13000"
+      reading_b = "12500"
+      # total_feet = ...
+    reference_solution: |
+      reading_a = "13000"
+      reading_b = "12500"
+      total_feet = int(reading_a) + int(reading_b)
+    checks:
+      - type: state
+        expr: "total_feet == 25500"
+        message: "total_feet should be the numeric sum of both readings"
+      - type: state
+        expr: "type(total_feet) is int"
+        message: "convert with int() so the sum is a number, not a longer string"
+      - type: ast
+        requires: [Call]
+        message: "use int() to convert"
+    hints:
+      - "Without conversion, + on two strings just glues them together: \"1300012500\"."
+      - "int(reading_a) + int(reading_b)"
+
+# file order = task order; id numbering is opaque (05 was added between 02 and 03)
+  - id: py-values/03-conversion/05-fix-mixed-math
+    title: "Fix: the string that looked like a number"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      The altimeter feed delivers text, the climb rate is a real number, and
+      Python refuses to add them (run it — read the TypeError). Convert the
+      reading so it prints `12500`.
+    concepts: [type-conversion, errors-reading, numbers]
+    starter_code: |
+      altitude = "12000"
+      climb = 500
+      print(altitude + climb)
+    reference_solution: |
+      altitude = "12000"
+      climb = 500
+      print(int(altitude) + climb)
+    checks:
+      - type: stdout
+        equals: "12500"
+      - type: ast
+        requires: [Call, BinOp]
+        message: "convert, then add — don't just print the answer"
+    hints:
+      - "can only concatenate str (not \"int\") to str — the + is trying to glue, not add."
+      - "int(altitude) makes it a number; then + means addition."
+
+  - id: py-values/03-conversion/03-raise-valueerror
+    title: Break it on purpose
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Time to meet a ValueError in person, in a safe environment. Write one
+      line that tries to convert the string `"banana"` to an int. It will
+      raise — that's the assignment. Read the whole traceback when it does:
+      note how it names the exact value it choked on.
+    concepts: [exceptions, type-conversion, errors-reading]
+    starter_code: |
+      # one doomed conversion, please
+    reference_solution: |
+      int("banana")
+    checks:
+      - type: exception
+        raises: ValueError
+        message: "the code should raise a ValueError (int() on a non-numeric string)"
+      - type: ast
+        requires: [Call]
+        message: "call int() on a string that has no business being an int"
+    hints:
+      - "int(\"anything non-numeric\") does it."
+      - "You don't need try/except — letting it crash IS the exercise."
+
+  - id: py-values/03-conversion/04-fill-blank-function
+    title: "Fill in: your first def (reading level)"
+    kind: fill-blank
+    difficulty: 3
+    prompt: |
+      Complete the return expression: Celsius to Fahrenheit is
+      `c * 9 / 5 + 32`. You're not designing functions yet — you're proving
+      you can finish one someone else started, which is most of real life.
+    concepts: [functions-defining, numbers, type-conversion]
+    starter_code: |
+      def to_fahrenheit(c):
+          return ___
+    reference_solution: |
+      def to_fahrenheit(c):
+          return c * 9 / 5 + 32
+    checks:
+      - type: function
+        name: to_fahrenheit
+        cases:
+          - args: [0]
+            expected: 32
+          - args: [100]
+            expected: 212
+          - args: [-40]
+            expected: -40
+        message: "to_fahrenheit should convert 0→32, 100→212, -40→-40"
+      - type: ast
+        requires: [FunctionDef, Return]
+        message: "keep the def/return shape — only the expression is yours"
+    hints:
+      - "Type the formula exactly as given, using the parameter c."
+      - "Operator precedence handles itself here: c * 9 / 5 + 32."

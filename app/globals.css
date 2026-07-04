@@ -2,27 +2,30 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * Pylot theme layer — ported from the owner's Themez design systems
+ * (~/Projects/Themes/, see vendor/themez/ for provenance and attribution).
+ *
+ * Two runtime themes, switched by <html data-theme="...">:
+ *   cyber    — dark terminal: near-black, neon green chrome, blood-red primary,
+ *              muted CRT ambience (Themez cyber_theme, built on @lumpenspace's ccru)
+ *   primary  — Bauhaus: white surface, primary red/blue/yellow, 3px black borders,
+ *              hard offset shadows, zero radius, no glow (Themez primary_theme)
+ *
+ * Readability rule (ROADMAP Phase 1): scanline/glow effects are ambient chrome
+ * only. Anything wrapped in `.readable` (editor, console, lesson prose) gets
+ * text-shadow/animation stripped, and scanline overlays are never mounted
+ * inside those containers.
+ */
+
+@custom-variant dark (&:is([data-theme="cyber"] *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+  --font-sans: var(--font-app);
+  --font-mono: var(--font-app);
+  --font-heading: var(--font-app);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -39,82 +42,168 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  /* pylot semantic colors (usable as e.g. text-pass, border-pane) */
+  --color-pass: var(--status-pass);
+  --color-fail: var(--status-fail);
+  --color-warn: var(--status-warn);
+  --color-info: var(--status-info);
+  --color-pane: var(--pane-border);
+  --color-pane-strong: var(--pane-border-strong);
+  --color-pane-bg: var(--pane-bg);
+  --color-pane-title: var(--pane-title);
+  --color-console-bg: var(--console-bg);
+  --color-editor-bg: var(--editor-bg);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+/* ---------------------------------------------------------------- cyber --- */
+/* Default theme: :root carries cyber so an attribute-less document still
+   renders correctly (e.g. error pages). */
+:root,
+[data-theme="cyber"] {
+  color-scheme: dark;
+
+  /* shadcn semantic set (Themez cyber_theme palette) */
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.75 0.01 80);
+  --card: oklch(0.1 0 0);
+  --card-foreground: oklch(0.75 0.01 80);
+  --popover: oklch(0.1 0 0);
+  --popover-foreground: oklch(0.75 0.01 80);
+  --primary: #e63946;
+  --primary-foreground: oklch(0.95 0 0);
+  --secondary: oklch(0.15 0 0);
+  --secondary-foreground: oklch(0.65 0 0);
+  --muted: oklch(0.15 0 0);
+  --muted-foreground: oklch(0.55 0.01 140);
+  --accent: #e63946;
+  --accent-foreground: oklch(0.95 0 0);
+  --destructive: oklch(0.5 0.25 25);
+  --border: oklch(0.2 0 0);
+  --input: oklch(0.12 0 0);
+  --ring: #10ff50;
+  --radius: 0.25rem;
+
+  /* type: JetBrains Mono (loaded in layout.tsx via next/font) */
+  --font-app: var(--font-jetbrains), "Courier New", monospace;
+
+  /* pylot pane chrome (ccru-derived: green-on-black panel language) */
+  --pane-bg: rgba(8, 8, 15, 0.95);
+  --pane-bg-gradient: linear-gradient(180deg, rgba(16, 255, 80, 0.02) 0%, rgba(8, 8, 15, 0.95) 40%);
+  --pane-border: rgba(16, 255, 80, 0.2);
+  --pane-border-strong: rgba(16, 255, 80, 0.4);
+  --pane-border-w: 1px;
+  --pane-title: #10ff50;
+  --pane-shadow: none;
+  --pane-clip: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+
+  /* status */
+  --status-pass: #10ff50;
+  --status-fail: #ff6b76; /* #E63946 brightened for dark-bg contrast */
+  --status-warn: #ff9d23;
+  --status-info: #2fd4cf; /* MAUK cyan brightened for dark bg */
+
+  /* effects (ambient chrome only — gated off wholesale in primary) */
+  --glow-title: 0 0 6px rgba(16, 255, 80, 0.3);
+  --glow-accent: 0 0 10px rgba(230, 57, 70, 0.4);
+  --fx-scanlines: block;
+
+  /* reading + code surfaces (readability rules apply inside) */
+  --prose-bg: oklch(0.1 0 0);
+  --prose-fg: oklch(0.82 0.01 80);
+  --console-bg: #060a08;
+  --console-fg: #d6ded6;
+  --editor-bg: #0a0d0b;
+  --editor-fg: #c8d1c8;
+  --editor-gutter-fg: #4a5a50;
+  --editor-active-line: rgba(16, 255, 80, 0.05);
+  --editor-selection: rgba(16, 255, 80, 0.16);
+  --editor-cursor: #10ff50;
+
+  /* syntax tokens — shared by CodeMirror (editor) and prism (lesson code) */
+  --syn-keyword: #10ff50;
+  --syn-string: #ff9d23;
+  --syn-number: #2fd4cf;
+  --syn-comment: #5f6f64;
+  --syn-def: #8ee6a8;
+  --syn-builtin: #4ce0dc;
+  --syn-constant: #ff6b76; /* True/False/None */
+  --syn-operator: #93a89c;
+  --syn-punct: #7d8f85;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/* -------------------------------------------------------------- primary --- */
+[data-theme="primary"] {
+  color-scheme: light;
+
+  /* shadcn semantic set (Themez primary_theme palette) */
+  --background: #fafafa;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #0045ad;
+  --primary-foreground: #fafafa;
+  --secondary: #ffd600;
+  --secondary-foreground: #111111;
+  --muted: #eeeeee;
+  --muted-foreground: #555555;
+  --accent: #ffd600;
+  --accent-foreground: #111111;
+  --destructive: #eb1a26;
+  --border: #111111;
+  --input: #ffffff;
+  --ring: #111111;
+  --radius: 0rem; /* sharp corners, always */
+
+  /* type: Courier Prime */
+  --font-app: var(--font-courier), "Courier New", monospace;
+
+  /* pane chrome: 3px black borders, hard offset shadow, white surface */
+  --pane-bg: #ffffff;
+  --pane-bg-gradient: none;
+  --pane-border: #111111;
+  --pane-border-strong: #111111;
+  --pane-border-w: 3px;
+  --pane-title: #111111;
+  --pane-shadow: 6px 6px 0px #111111;
+  --pane-clip: none;
+
+  /* status (derived colors readable on white, per THEME_GUIDE) */
+  --status-pass: #1a7a1a;
+  --status-fail: #eb1a26;
+  --status-warn: #b89600;
+  --status-info: #0045ad;
+
+  /* effects: none. Bauhaus does not glow. */
+  --glow-title: none;
+  --glow-accent: none;
+  --fx-scanlines: none;
+
+  --prose-bg: #ffffff;
+  --prose-fg: #111111;
+  --console-bg: #ffffff;
+  --console-fg: #111111;
+  --editor-bg: #ffffff;
+  --editor-fg: #111111;
+  --editor-gutter-fg: #999999;
+  --editor-active-line: rgba(0, 69, 173, 0.05);
+  --editor-selection: rgba(0, 69, 173, 0.14);
+  --editor-cursor: #111111;
+
+  --syn-keyword: #0045ad;
+  --syn-string: #1a7a1a;
+  --syn-number: #eb1a26;
+  --syn-comment: #757575;
+  --syn-def: #111111;
+  --syn-builtin: #0045ad;
+  --syn-constant: #eb1a26;
+  --syn-operator: #111111;
+  --syn-punct: #555555;
 }
 
 @layer base {
@@ -127,4 +216,144 @@
   html {
     @apply font-sans;
   }
+  ::selection {
+    background: var(--editor-selection);
+  }
+}
+
+/* ------------------------------------------------------------ utilities --- */
+
+/* Readability enforcement: anything long-form (lesson prose, console output,
+   editor) sits inside .readable — no glow, no animation, no filters. */
+.readable,
+.readable * {
+  text-shadow: none !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+/* Panel title glow (cyber) / plain uppercase (primary) */
+.pane-title-fx {
+  text-shadow: var(--glow-title);
+}
+
+/* Ambient scanlines — mount ONLY on chrome/backdrop elements, never inside
+   .readable containers. Collapses entirely under primary. */
+.fx-scanlines {
+  position: relative;
+}
+.fx-scanlines::before {
+  content: "";
+  display: var(--fx-scanlines);
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.12) 2px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Lesson prose (left pane MDX). A readability surface: calm, compact,
+   contrast-checked in both themes. */
+.lesson-prose {
+  color: var(--prose-fg);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.lesson-prose h1 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0.5rem 0 0.75rem;
+  color: var(--pane-title);
+}
+[data-theme="primary"] .lesson-prose h1 {
+  text-transform: uppercase;
+}
+.lesson-prose h2 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 1.25rem 0 0.5rem;
+}
+.lesson-prose p {
+  margin: 0.6rem 0;
+}
+.lesson-prose ul,
+.lesson-prose ol {
+  margin: 0.6rem 0;
+  padding-left: 1.4rem;
+}
+.lesson-prose ul {
+  list-style: square;
+}
+.lesson-prose ol {
+  list-style: decimal;
+}
+.lesson-prose li {
+  margin: 0.25rem 0;
+}
+.lesson-prose strong {
+  color: var(--pane-title);
+}
+.lesson-prose em {
+  font-style: italic;
+}
+.lesson-prose a {
+  color: var(--status-info);
+  text-decoration: underline;
+}
+.lesson-prose code {
+  background: var(--editor-bg);
+  color: var(--syn-string);
+  padding: 0.05rem 0.3rem;
+  font-size: 0.95em;
+}
+.lesson-prose pre code {
+  background: transparent;
+  padding: 0;
+}
+.lesson-prose table {
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 12px;
+}
+.lesson-prose th,
+.lesson-prose td {
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.6rem;
+  text-align: left;
+}
+.lesson-prose th {
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+/* Bauhaus button press (primary): shadow collapses, element translates */
+[data-theme="primary"] .btn-press:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0px var(--pane-border) !important;
+}
+
+/* Custom scrollbar (cyber terminal look; unobtrusive under primary too) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }

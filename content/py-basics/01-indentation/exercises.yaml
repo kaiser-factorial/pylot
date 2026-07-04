@@ -1,0 +1,119 @@
+exercises:
+  - id: py-basics/01-indentation/01-fix-colons
+    title: "Fix: the missing colons"
+    kind: fix-bug
+    difficulty: 1
+    prompt: |
+      Straight from your own attempt log again: the variables are declared
+      correctly this time, but Python still refuses. It should print `no`.
+      The traceback says `SyntaxError: expected ':'` — believe it.
+    concepts: [indentation, errors-reading]
+    starter_code: |
+      x = 1
+      y = 2
+
+      if (x == y)
+          print("yes")
+      else
+          print("no")
+    reference_solution: |
+      x = 1
+      y = 2
+
+      if x == y:
+          print("yes")
+      else:
+          print("no")
+    checks:
+      - type: stdout
+        equals: "no"
+      - type: ast
+        requires: [If, Compare]
+        message: "keep the if/else and its comparison — the fix is punctuation, not structure"
+    hints:
+      - "Every line that introduces a block (`if`, `else`, later `for`, `def`…) ends with `:`."
+      - "`else` needs a colon too — it introduces a block of its own."
+
+  - id: py-basics/01-indentation/02-fix-indent
+    title: "Fix: flat as JavaScript"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      The colons are there now, but everything is flat — in Python the body
+      *must* be indented, or it isn't a body. Make it print `checked` and then
+      `done` (the `done` should print no matter what the if decides).
+    concepts: [indentation]
+    starter_code: |
+      threshold = 10
+      value = 12
+      if value > threshold:
+      print("checked")
+      print("done")
+    reference_solution: |
+      threshold = 10
+      value = 12
+      if value > threshold:
+          print("checked")
+      print("done")
+    checks:
+      - type: stdout
+        equals: |
+          checked
+          done
+      - type: ast
+        requires: [If]
+    hints:
+      - "Indent exactly the lines that belong to the if — and only those."
+      - "`done` should print unconditionally, so it must NOT be inside the if block."
+
+  - id: py-basics/01-indentation/03-predict-block
+    title: "Predict: who's in the block?"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      Indentation decides what belongs to the if. Read carefully — one of these
+      prints is inside the block, one is not. What exactly gets printed?
+    concepts: [indentation, execution-model]
+    starter_code: |
+      score = 40
+      if score > 50:
+          print("pass")
+          print("well done")
+      print("evaluated")
+    reference_solution: |
+      score = 40
+      if score > 50:
+          print("pass")
+          print("well done")
+      print("evaluated")
+    checks:
+      - type: stdout
+        equals: "evaluated"
+    hints:
+      - "score > 50 is False, so the entire indented block is skipped."
+      - "Only the un-indented line runs unconditionally."
+
+  - id: py-basics/01-indentation/04-comment-out
+    title: Silence a line
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      The flight recorder is too chatty. Comment out the middle line (don't
+      delete it — a commented line is documentation of a decision) so the
+      output is just `pre-flight` and `takeoff`.
+    concepts: [comments]
+    starter_code: |
+      print("pre-flight")
+      print("debug: fuel pump voltage nominal")
+      print("takeoff")
+    reference_solution: |
+      print("pre-flight")
+      # print("debug: fuel pump voltage nominal")
+      print("takeoff")
+    checks:
+      - type: stdout
+        equals: |
+          pre-flight
+          takeoff
+    hints:
+      - "A `#` at the start of a line makes Python ignore the whole line."

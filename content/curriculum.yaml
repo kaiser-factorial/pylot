@@ -5,3 +5,13 @@ chapters:
     dir: py-basics
     lessons:
       - 00-hello
+      - 01-indentation
+      - 02-scripts-and-main
+  - id: py-values
+    title: "Ch. 1 — Variables, types, strings"
+    dir: py-values
+    lessons:
+      - 00-numbers
+      - 01-strings
+      - 02-truthiness
+      - 03-conversion

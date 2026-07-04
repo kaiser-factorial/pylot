@@ -1,0 +1,35 @@
+# Strings and f-strings
+
+String literals take single or double quotes (pick one, be consistent). Concatenation
+uses `+`, repetition uses `*`, and length is the free-standing function `len()` —
+not a property.
+
+```python
+callsign = "PY" + "LOT"
+runway = "=" * 20
+print(len(callsign))
+```
+
+The workhorse is the **f-string**: put an `f` before the opening quote, and anything in
+`{braces}` is evaluated and interpolated. Any expression works in there — variables,
+arithmetic, method calls.
+
+```python
+speed = 420
+msg = f"ground speed {speed} knots ({speed * 1.852:.0f} km/h)"
+```
+
+That `:.0f` after the expression is a **format spec**: `:` starts it, `.1f` means "as a
+float with 1 decimal place", `.0f` means none. It lives inside the braces, after the value.
+
+<LangContrast lang="js">
+Same idea as template literals, different costume: `` `speed ${x}` `` becomes
+`f"speed {x}"` — the `f` prefix replaces the backticks, `{}` replaces `${}`. Two things
+JS lets you get away with that Python won't: `"age: " + 30` **throws a TypeError**
+(no silent number-to-string coercion — convert explicitly with `str(30)` or use an
+f-string), and `.length` is `len(thing)`, a function, not a property.
+</LangContrast>
+
+Strings are objects with methods: `.upper()`, `.lower()`, `.strip()`, `.replace(a, b)` —
+note the parentheses, they're calls. Methods return **new** strings; the original is
+immutable and unbothered.

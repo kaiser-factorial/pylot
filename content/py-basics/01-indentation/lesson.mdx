@@ -1,0 +1,29 @@
+# Indentation is the syntax
+
+In Python, the *shape* of the code is the structure. A block starts with a colon `:` at the
+end of the introducing line, and everything indented underneath belongs to it. Un-indent,
+and you've left the block. That's it — that's the whole grammar of nesting.
+
+```python
+temperature = 31
+
+if temperature > 30:
+    print("hot")
+    print("stay hydrated")
+print("this always prints")
+```
+
+<LangContrast lang="js">
+Braces `{}` don't delimit blocks and semicolons don't end statements. Where JS has
+`if (x) { ... }`, Python has `if x:` plus indentation. The parentheses around the condition
+are legal but unidiomatic — and the `{}` will be a `SyntaxError`. Your muscle memory will
+fight you for about two days. Let the error messages win the argument.
+</LangContrast>
+
+Two more shapes you'll use immediately:
+
+- **Comments** start with `#`. There is no `/* block comment */` — just stack `#` lines.
+- `elif` is Python's `else if` — one word, still ends with a colon.
+
+Consistency matters: pick 4 spaces (the editor's Tab key inserts them) and never mix tabs
+and spaces — Python will refuse to guess what you meant.

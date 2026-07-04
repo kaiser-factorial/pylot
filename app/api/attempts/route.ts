@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { desc, eq } from 'drizzle-orm'
 import { db, schema } from '@/db'
 import { getCurrentUser } from '@/lib/auth'
+import { recordAttemptProgress } from '@/lib/progression'
 
 // Append-only attempt log (see db/schema.ts). POST inserts, GET lists recent.
+// Graded submissions also upsert the progress row — the attempts table itself
+// is never updated (append-only invariant).
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser()
   const body = await req.json()
-  const { exerciseId, sectionId, code, result, durationMs } = body ?? {}
+  const { exerciseId, sectionId, code, result, durationMs, graded } = body ?? {}
 
   if (typeof code !== 'string' || typeof result !== 'object' || result === null) {
     return NextResponse.json({ error: 'code and result are required' }, { status: 400 })
@@ -28,6 +31,10 @@ export async function POST(req: NextRequest) {
       durationMs: Number.isFinite(durationMs) ? Math.round(durationMs) : 0,
     })
     .returning({ id: schema.attempts.id })
+
+  if (graded === true && typeof exerciseId === 'string') {
+    await recordAttemptProgress(user.id, exerciseId, Boolean(result.passed))
+  }
 
   return NextResponse.json({ id: row.id })
 }

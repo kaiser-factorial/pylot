@@ -28,6 +28,29 @@ and the checks, not by reading the code.
    remote runner in Phase 5). Never eval learner code on the Next.js server.
 7. **No copy-paste affordance** from lesson content into the editor. The learner types.
 
+## Build notes (learned in Phase 1)
+- **Theme architecture**: two themes switch via `<html data-theme="cyber|primary">`,
+  server-rendered from `users.settings` (no FOUC). All component color/effect styling goes
+  through the CSS custom properties in `app/globals.css` — including one shared CodeMirror
+  HighlightStyle and one prism theme that both read `--syn-*` vars, so syntax colors follow
+  the theme with zero JS reconfiguration. Never hardcode a color in a component.
+- **`PYLOT_DB_PATH`** overrides the SQLite path. `verify:phase1` boots its own server on a
+  scratch VACUUM-INTO copy so automated passes never pollute the owner's real progress —
+  keep doing this in later phases; completing chapters for real is the owner's verification.
+- **Playwright + oklch**: Chrome serializes oklch computed colors as `oklch(...)`, which
+  breaks naive rgb() parsing in style assertions — resolve colors through a canvas pixel
+  (see CONTRAST_FN in scripts/verify-phase1.ts).
+- When asserting editor syntax highlighting, fill token-rich code first: a starter that is
+  one `# comment` yields a single token color and a false failure.
+- **Content review panel**: after authoring content, spawn Haiku subagents (check
+  robustness / pedagogy / JS-contrast accuracy lenses) — the owner cannot proofread
+  reference solutions for unpassed chapters (spoiler policy), so panel + validator are QA.
+- Reference solutions must never reach the browser: `toClientExercise()` strips them
+  server-side. Checks DO ship to the client (they run in the Pyodide worker) — acceptable
+  devtools-level spoiler for the single-user era; revisit at distribution.
+- `input()` cannot run in the Pyodide worker (no stdin) — teach it in prose only until a
+  runtime that has a terminal; exercises must not call it.
+
 ## Content authoring notes
 - Exercise IDs are stable path-style strings; never rename a shipped ID (the DB references it).
 - Follow the exercise-kind mix in CURRICULUM.md — especially `fix-bug` and `predict-output`

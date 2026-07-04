@@ -1,0 +1,112 @@
+exercises:
+  - id: py-values/00-numbers/01-predict-division
+    title: "Predict: two kinds of division"
+    kind: predict-output
+    difficulty: 1
+    prompt: |
+      `/` and `//` are different operators with different answers. Predict all
+      three lines exactly — including how Python writes each number.
+    concepts: [numbers, printing]
+    starter_code: |
+      print(7 / 2)
+      print(7 // 2)
+      print(8 / 2)
+    reference_solution: |
+      print(7 / 2)
+      print(7 // 2)
+      print(8 / 2)
+    checks:
+      - type: stdout
+        equals: |
+          3.5
+          3
+          4.0
+    hints:
+      - "`/` always produces a float — even when the division is exact."
+      - "How does Python print a float that happens to be a whole number?"
+
+  - id: py-values/00-numbers/02-flight-math
+    title: Descent math
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      A plane at 38000 ft must descend to 12000 ft, losing 1800 ft per minute.
+      Compute `to_lose` (feet to descend) and `minutes` (how long it takes,
+      as an exact float using true division). Use the variables that are
+      already defined — no hardcoded numbers from your own arithmetic.
+    concepts: [numbers, variables]
+    starter_code: |
+      altitude = 38000
+      target = 12000
+      rate = 1800
+      # to_lose = ...
+      # minutes = ...
+    reference_solution: |
+      altitude = 38000
+      target = 12000
+      rate = 1800
+      to_lose = altitude - target
+      minutes = to_lose / rate
+    checks:
+      - type: state
+        expr: "to_lose == 26000"
+        message: "to_lose should be the difference between altitude and target"
+      - type: state
+        expr: "abs(minutes - 14.444444444444445) < 1e-9"
+        message: "minutes should be to_lose divided by rate (true division)"
+      - type: ast
+        requires: [BinOp]
+        message: "compute the values from the given variables with arithmetic"
+    hints:
+      - "Subtraction first, then divide the result by the rate."
+      - "If your `minutes` is 14, you used `//` — the tower wants the decimals."
+
+  - id: py-values/00-numbers/03-fix-power
+    title: "Fix: the silent XOR"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This is supposed to compute 2 to the 10th power — 1024 bytes in a
+      kibibyte — but it prints `8` and raises no error at all. The worst kind
+      of bug: the one that runs. Fix the operator.
+    concepts: [numbers, errors-reading]
+    starter_code: |
+      kibibyte = 2 ^ 10
+      print(kibibyte)
+    reference_solution: |
+      kibibyte = 2 ** 10
+      print(kibibyte)
+    checks:
+      - type: stdout
+        equals: "1024"
+      - type: state
+        expr: "kibibyte == 1024"
+    hints:
+      - "`^` is bitwise XOR in Python — it never means 'to the power of'."
+      - "Exponentiation is a doubled asterisk."
+
+  - id: py-values/00-numbers/04-predict-mixed
+    title: "Predict: int meets float"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      When int and float mix, who wins? And what does `type()` actually print?
+      Predict both lines exactly (the second line is fussy — copy its shape
+      precisely).
+    concepts: [numbers, dynamic-typing, printing]
+    starter_code: |
+      result = 10 + 2.0
+      print(result)
+      print(type(result))
+    reference_solution: |
+      result = 10 + 2.0
+      print(result)
+      print(type(result))
+    checks:
+      - type: stdout
+        equals: |
+          12.0
+          <class 'float'>
+    hints:
+      - "Mixing int and float promotes the result to float."
+      - "type() prints in the form <class '...'> — angle brackets and all."

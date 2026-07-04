@@ -3,9 +3,20 @@
 Python runs your file top to bottom, one statement at a time. `print()` writes to the
 console; a bare expression's value is simply computed and (in a script) discarded.
 
-Unlike JavaScript there are no braces and no semicolons — **indentation is the syntax** —
-and variables appear the moment you assign to them, no `let`/`const`.
+```python
+nums = [1, 2, 3]
+total = sum(nums)
+print(total)
+```
 
-Try the tasks on the right. After each run, look at the **workspace panel**: it shows every
-variable that exists right now, with its type and value. Get in the habit of checking it —
-it's how you see what your code *did*, not just what it printed.
+Variables appear the moment you assign to them — that's the whole ceremony.
+
+<LangContrast lang="js">
+No `let`, no `const`, no `var`. Ever. `x = 1` **is** the declaration. Writing `let x = 1`
+is a `SyntaxError` — Python doesn't know what a `let` is (you've met this one personally).
+Also: no semicolons. A line ending ends the statement.
+</LangContrast>
+
+After each run, look at the **workspace panel** on the right: it shows every variable that
+exists right now, with its type and value. Get in the habit of checking it — it's how you
+see what your code *did*, not just what it printed.

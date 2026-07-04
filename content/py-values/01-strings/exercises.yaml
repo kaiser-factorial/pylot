@@ -1,0 +1,114 @@
+exercises:
+  - id: py-values/01-strings/01-fstring-callout
+    title: Radio call
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Using the given variables and ONE f-string, print exactly:
+      `Pylot 42 cleared for runway 27`
+    concepts: [f-strings, printing]
+    starter_code: |
+      flight = 42
+      runway = 27
+      # one print, one f-string
+    reference_solution: |
+      flight = 42
+      runway = 27
+      print(f"Pylot {flight} cleared for runway {runway}")
+    checks:
+      - type: stdout
+        equals: "Pylot 42 cleared for runway 27"
+      - type: ast
+        requires: [JoinedStr]
+        message: "use an f-string (f\"...\") — not + concatenation"
+    hints:
+      - "f\"text {variable} text\" — the f goes right before the opening quote."
+      - "Both variables go in their own {braces}."
+
+  - id: py-values/01-strings/02-fill-blank-fstring
+    title: "Fill in: the flight report"
+    kind: fill-blank
+    difficulty: 2
+    prompt: |
+      Complete the two blanks (`___`) so the report prints exactly:
+      `ALTITUDE: 38000 ft (7.2 miles)`
+      The second blank converts feet to miles (divide by 5280) — do the
+      division inside the braces, and format it to one decimal with `:.1f`.
+    concepts: [f-strings, numbers]
+    starter_code: |
+      altitude = 38000
+      print(f"ALTITUDE: {___} ft ({___:.1f} miles)")
+    reference_solution: |
+      altitude = 38000
+      print(f"ALTITUDE: {altitude} ft ({altitude / 5280:.1f} miles)")
+    checks:
+      - type: stdout
+        equals: "ALTITUDE: 38000 ft (7.2 miles)"
+      - type: ast
+        requires: [JoinedStr, BinOp]
+        message: "keep the f-string, and compute the miles inside the braces"
+    hints:
+      - "The first blank is just the variable name."
+      - "The second blank is an expression: altitude / 5280 — the :.1f after it stays put."
+
+  - id: py-values/01-strings/03-fix-concat
+    title: "Fix: the coercion that never comes"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      In JavaScript, `"line " + 30` quietly becomes `"line 30"`. Python
+      refuses — run it and read the TypeError first. Then make it print
+      `heading 270` twice: once by converting explicitly, once with an
+      f-string. (Two prints, same text.)
+    concepts: [strings, type-conversion, errors-reading, f-strings]
+    starter_code: |
+      heading = 270
+      print("heading " + heading)
+      print("heading " + heading)
+    reference_solution: |
+      heading = 270
+      print("heading " + str(heading))
+      print(f"heading {heading}")
+    checks:
+      - type: stdout
+        equals: |
+          heading 270
+          heading 270
+      - type: ast
+        requires: [JoinedStr, Call]
+        message: "one line should use str(), the other an f-string"
+    hints:
+      - "Read the traceback bottom line: can only concatenate str (not \"int\") to str."
+      - "str(heading) turns 270 into \"270\" — then + works."
+      - "The f-string version needs no conversion at all: f\"heading {heading}\"."
+
+  - id: py-values/01-strings/04-predict-methods
+    title: "Predict: methods return, they don't mutate"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      String methods hand you a NEW string; the original never changes.
+      With that in mind — and `len()` counting every character, spaces
+      included — predict all three lines.
+    concepts: [strings, functions-calling]
+    starter_code: |
+      word = "mayday"
+      shouted = word.upper()
+      print(shouted)
+      print(word)
+      print(len("mayday mayday"))
+    reference_solution: |
+      word = "mayday"
+      shouted = word.upper()
+      print(shouted)
+      print(word)
+      print(len("mayday mayday"))
+    checks:
+      - type: stdout
+        equals: |
+          MAYDAY
+          mayday
+          13
+    hints:
+      - ".upper() does not change `word` — it returns a new string that was assigned to `shouted`."
+      - "Count the space too: 6 + 1 + 6."

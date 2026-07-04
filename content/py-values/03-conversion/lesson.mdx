@@ -1,0 +1,39 @@
+# Types, conversion, and honest errors
+
+Every value knows its type; `type(x)` tells you. Variables, though, are just labels —
+the same name can point at an int now and a string later. That's **dynamic typing**:
+flexibility for you, and a reason `type()` is your friend when data arrives from
+anywhere you didn't personally control.
+
+Conversion is explicit, by constructor call:
+
+```python
+int("42")      # 42
+float("3.5")   # 3.5
+str(1024)      # "1024"
+int(3.9)       # 3  — truncates toward zero, no rounding
+```
+
+And when a conversion is impossible, Python doesn't hand you a shrug — it raises:
+
+```python
+int("banana")  # ValueError: invalid literal for int() with base 10: 'banana'
+```
+
+<LangContrast lang="js">
+`Number("banana")` gives you `NaN` — a value that quietly poisons every calculation it
+touches until something visibly breaks three files away. `int("banana")` raises a
+`ValueError` **at the scene of the crime**, with the offending value in the message.
+Loud beats quiet. You'll come to love this.
+</LangContrast>
+
+A note on `input()`, print's sibling: in a normal terminal, `input("prompt: ")` pauses,
+reads a line the user types, and — the part everyone forgets — **always returns a
+string**, even if the user typed `42`. That's why `int(input())` is one of Python's most
+common idioms. This browser cockpit has no terminal stdin, so you'll meet `input()` live
+when Pylot grows a real script runtime; until then, remember only the trap: whatever
+comes in through `input()` is text until *you* convert it.
+
+One preview of Chapter 4, because you'll see `def` in the wild long before then: a
+function is a named, reusable block. `def name(args):` then an indented body, `return`
+hands the value back. You only need to *read* them for now.

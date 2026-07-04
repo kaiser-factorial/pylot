@@ -1,0 +1,98 @@
+exercises:
+  - id: py-basics/02-scripts-and-main/01-print-name
+    title: The variable that was always there
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Print the value of `__name__` — no quotes around it, it's a variable,
+      not a string. See for yourself what the incantation compares against.
+    concepts: [execution-model, printing]
+    starter_code: |
+      # print the __name__ variable
+    reference_solution: |
+      print(__name__)
+    checks:
+      - type: stdout
+        equals: "__main__"
+      - type: ast
+        requires: [Call]
+        message: "print it — don't just write it as a bare expression"
+    hints:
+      - "It's `print(__name__)` — two underscores on each side."
+
+  - id: py-basics/02-scripts-and-main/02-main-guard
+    title: Write the guard yourself
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Type the classic guard from scratch (typing it is the point — your
+      hands need to own this shape): if `__name__` equals `"__main__"`,
+      print `engines on`.
+    concepts: [execution-model, comparison, indentation]
+    starter_code: |
+      # the guard, from memory
+    reference_solution: |
+      if __name__ == "__main__":
+          print("engines on")
+    checks:
+      - type: stdout
+        equals: "engines on"
+      - type: ast
+        requires: [If, Compare]
+        message: "use the if __name__ == \"__main__\" comparison"
+    hints:
+      - "The variable side has no quotes; the value side is the string \"__main__\"."
+      - "if ... : then an indented print."
+
+  - id: py-basics/02-scripts-and-main/03-predict-silent
+    title: "Predict: the script stays silent"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      In the REPL, every bare expression echoes its value back. This is a
+      script. Read the code: what is the *complete* output? (If a line
+      produces no output, it contributes nothing.)
+    concepts: [execution-model, printing]
+    starter_code: |
+      2 + 2
+      "hello"
+      answer = 6 * 7
+      print(answer)
+      answer
+    reference_solution: |
+      2 + 2
+      "hello"
+      answer = 6 * 7
+      print(answer)
+      answer
+    checks:
+      - type: stdout
+        equals: "42"
+    hints:
+      - "Bare expressions in a script are computed and discarded — no echo."
+      - "Only one line here actually calls print()."
+
+  - id: py-basics/02-scripts-and-main/04-fix-main-quotes
+    title: "Fix: the guard that guards nothing"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      Someone typed the famous guard from memory and dropped the quotes.
+      Run it, read the NameError, and notice *which side* of the comparison
+      Python is complaining about. Fix it so it prints `cleared for taxi`.
+    concepts: [execution-model, comparison, errors-reading]
+    starter_code: |
+      if __name__ == __main__:
+          print("cleared for taxi")
+    reference_solution: |
+      if __name__ == "__main__":
+          print("cleared for taxi")
+    checks:
+      - type: stdout
+        equals: "cleared for taxi"
+      - type: ast
+        requires: [If, Compare]
+        message: "keep the guard — the bug is one pair of missing characters"
+    hints:
+      - "NameError: name '__main__' is not defined — Python thinks the right side is a variable."
+      - "The left side IS a variable (__name__). The right side is a string value — it needs quotes."

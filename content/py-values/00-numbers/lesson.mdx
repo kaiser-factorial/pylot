@@ -1,0 +1,30 @@
+# Numbers
+
+Two kinds you'll meet daily: `int` (whole, arbitrary size) and `float` (decimal,
+the usual floating-point caveats). Arithmetic mostly reads like math:
+
+```python
+fuel = 140
+burn_rate = 12.5
+hours = fuel / burn_rate
+```
+
+Three operators deserve special attention, because they are where other languages'
+instincts betray you:
+
+| Operator | Meaning | Example |
+|---|---|---|
+| `/` | true division — **always** returns a float | `7 / 2` → `3.5` |
+| `//` | floor division — rounds down, stays int-ish | `7 // 2` → `3` |
+| `**` | exponentiation | `2 ** 10` → `1024` |
+
+<LangContrast lang="js">
+Three traps in one table. In JS, `/` on two ints can give you `3.5` too — but JS has no
+`//` (that's a comment in some languages, a syntax error there). More dangerous: `^` in
+Python is **bitwise XOR**, not "to the power of" — `2 ^ 10` is `8`, silently, no error.
+JS's `**` and Python's `**` agree, so let that one habit carry over. And there's no
+`Math.pow` ceremony — `**` is just an operator.
+</LangContrast>
+
+`%` is modulo (remainder), as expected. Operator precedence is the school-math one;
+when in doubt, parenthesize — future-you counts as a reader too.

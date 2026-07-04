@@ -7,6 +7,18 @@ concepts:
   - execution-model     # top-to-bottom flow, scripts vs REPL, __main__
   - variables           # assignment, rebinding, dynamic typing
   - numbers             # arithmetic, int/float, operators
-  - strings             # literals, f-strings, methods
+  - strings             # literals, quoting, concatenation, methods
+  - f-strings           # f"..." interpolation
   - printing            # print(), console output
   - functions-calling   # calling built-ins/functions, arguments
+  - functions-defining  # def, return (reading level until Ch. 4)
+  - indentation         # indentation as syntax, blocks, colons
+  - comments            # the # character, commenting out code
+  - booleans            # True/False, comparison results
+  - none                # None, is None, null-vs-None
+  - truthiness          # what counts as falsy; JS-vs-PY divergences
+  - comparison          # ==, !=, <, is; no === in Python
+  - type-conversion     # int()/float()/str(), ValueError on bad input
+  - dynamic-typing      # type(), rebinding across types
+  - exceptions          # errors as objects: raising, exception types
+  - errors-reading      # reading tracebacks bottom-up

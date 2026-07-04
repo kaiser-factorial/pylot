@@ -1,0 +1,88 @@
+exercises:
+  - id: py-values/02-truthiness/01-fix-true
+    title: "Fix: true is not True"
+    kind: fix-bug
+    difficulty: 1
+    prompt: |
+      Run it and read the error: Python thinks lowercase `true` is a variable
+      name it's never heard of. Fix both booleans so the code prints
+      `gear down`.
+    concepts: [booleans, errors-reading]
+    starter_code: |
+      gear_down = true
+      warning_light = false
+
+      if gear_down:
+          print("gear down")
+    reference_solution: |
+      gear_down = True
+      warning_light = False
+
+      if gear_down:
+          print("gear down")
+    checks:
+      - type: stdout
+        equals: "gear down"
+      - type: state
+        expr: "gear_down is True and warning_light is False"
+    hints:
+      - "NameError: name 'true' is not defined — because the real one is capitalized."
+
+  - id: py-values/02-truthiness/02-predict-falsy
+    title: "Predict: the falsy lineup"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      `bool(x)` reveals any value's verdict. Predict all five lines — and
+      remember this is Python, not JavaScript: one of these answers is the
+      opposite of what your JS instincts say.
+    concepts: [truthiness, booleans, printing]
+    starter_code: |
+      print(bool(0))
+      print(bool(""))
+      print(bool([]))
+      print(bool("false"))
+      print(bool(None))
+    reference_solution: |
+      print(bool(0))
+      print(bool(""))
+      print(bool([]))
+      print(bool("false"))
+      print(bool(None))
+    checks:
+      - type: stdout
+        equals: |
+          False
+          False
+          False
+          True
+          False
+    hints:
+      - "In JavaScript, an empty [] is truthy. In Python it is FALSY — that reversal is exactly what this line is testing."
+      - "\"false\" is a non-empty string. Non-empty means truthy, regardless of what it spells."
+
+  - id: py-values/02-truthiness/03-none-check
+    title: The empty seat
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      `copilot` is `None` today. Write a check using `is None` that prints
+      `autopilot engaged` when there's no copilot. (Use `is`, not `==` —
+      identity is the idiom for None.)
+    concepts: [none, comparison, indentation]
+    starter_code: |
+      copilot = None
+      # your check here
+    reference_solution: |
+      copilot = None
+      if copilot is None:
+          print("autopilot engaged")
+    checks:
+      - type: stdout
+        equals: "autopilot engaged"
+      - type: ast
+        requires: [Is]
+        message: "use the `is` operator for the None check"
+    hints:
+      - "The shape is: if something is None:"
+      - "Then an indented print underneath."

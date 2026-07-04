@@ -37,3 +37,69 @@ exercises:
         message: "use the print() function"
     hints:
       - "Strings can use single or double quotes."
+
+  - id: py-basics/00-hello/03-predict-flow
+    title: "Predict: top to bottom"
+    kind: predict-output
+    difficulty: 1
+    prompt: |
+      Python executes top to bottom, and a variable holds whatever it was
+      assigned *last*. Read the code and predict the exact output.
+    concepts: [execution-model, variables, printing]
+    starter_code: |
+      x = 10
+      print(x)
+      x = 20
+      x = x + 5
+      print(x)
+    reference_solution: |
+      x = 10
+      print(x)
+      x = 20
+      x = x + 5
+      print(x)
+    checks:
+      - type: stdout
+        equals: |
+          10
+          25
+    hints:
+      - "The first print happens before x changes."
+      - "`x = x + 5` reads the current value of x, adds 5, and rebinds x to the result."
+
+  - id: py-basics/00-hello/04-fix-the-javascript
+    title: "Fix: a JS speaker wrote this"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This code was written by someone whose fingers still think in JavaScript
+      (the attempt log says it was you, three days ago). It should print `no`.
+      Fix it so it runs — read the error messages from the bottom up; they tell
+      you exactly which line to look at.
+    concepts: [variables, indentation, comparison, errors-reading]
+    starter_code: |
+      let x=1
+      let y=2
+
+      if(x==y)
+      print("yes")
+      else
+      print("no")
+    reference_solution: |
+      x = 1
+      y = 2
+
+      if x == y:
+          print("yes")
+      else:
+          print("no")
+    checks:
+      - type: stdout
+        equals: "no"
+      - type: ast
+        requires: [If, Compare]
+        message: "keep the if/else structure — fix it, don't replace it"
+    hints:
+      - "Python has no `let` — assignment alone declares the variable."
+      - "Conditions don't need parentheses, but `if` and `else` lines must end with a colon `:`."
+      - "The body of an if/else must be indented (4 spaces is the convention)."
