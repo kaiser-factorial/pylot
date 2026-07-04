@@ -58,6 +58,15 @@ and the checks, not by reading the code.
 - Lesson prose stays short; the exercises carry the teaching. Include JS-contrast callouts
   where the curriculum notes them.
 - Difficulty tags (1–5) matter: they normalize struggle scores for reward triggers.
+- `predict-output` snippets must use **fresh values**, never the lesson prose's own
+  examples (owner caught 7/2 reused verbatim — that tests memory, not the model).
+- A `fix-bug` starter may only contain bugs whose fix has **already been taught** (or is
+  this lesson's topic). Owner had to fix colons+indentation one lesson before the
+  indentation lesson; scope each bug to the current concept.
+- No owner-specific second-person callouts in content ("you did this three days ago") —
+  content must generalize; personal callbacks are the Phase 2 teacher's job. Keeping a
+  generalized wink ("for at least one learner, this is verbatim from their attempt log")
+  is fine and encouraged.
 
 ## Build notes (learned in Phase 0 — save yourself the debugging)
 - **Verify by driving a real browser.** Playwright is installed; follow the

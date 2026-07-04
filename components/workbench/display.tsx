@@ -101,7 +101,12 @@ export function CheckReportView({ checks }: { checks: CheckResult[] }) {
               >
                 {c.type}
               </span>
-              <span style={{ color: c.passed === false ? color : 'var(--console-fg)' }}>{c.detail}</span>
+              <span
+              className="whitespace-pre-wrap"
+              style={{ color: c.passed === false ? color : 'var(--console-fg)' }}
+            >
+              {c.detail}
+            </span>
             </span>
           </li>
         )
@@ -155,12 +160,14 @@ export function WorkbenchButton({
   disabled,
   variant = 'primary',
   testId,
+  title,
 }: {
   children: ReactNode
   onClick?: () => void
   disabled?: boolean
   variant?: 'primary' | 'ghost'
   testId?: string
+  title?: string
 }) {
   return (
     <button
@@ -168,21 +175,8 @@ export function WorkbenchButton({
       data-testid={testId}
       onClick={onClick}
       disabled={disabled}
-      className="btn-press px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] disabled:cursor-not-allowed disabled:opacity-40"
-      style={
-        variant === 'primary'
-          ? {
-              background: 'var(--primary)',
-              color: 'var(--primary-foreground)',
-              border: 'var(--pane-border-w) solid var(--pane-border-strong)',
-              boxShadow: 'var(--pane-shadow)',
-            }
-          : {
-              background: 'transparent',
-              color: 'var(--pane-title)',
-              border: '1px solid var(--pane-border)',
-            }
-      }
+      title={title}
+      className={`btn-press btn-anim ${variant === 'primary' ? 'wb-btn-primary' : 'wb-btn-ghost'} px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
     </button>

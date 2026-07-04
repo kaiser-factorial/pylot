@@ -29,7 +29,7 @@ export function ThemeToggle({ initial }: { initial: ThemeName }) {
       type="button"
       data-testid="theme-toggle"
       onClick={toggle}
-      className="btn-press px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
+      className="btn-press btn-anim px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
       style={{
         border: 'var(--pane-border-w) solid var(--pane-border)',
         color: 'var(--pane-title)',

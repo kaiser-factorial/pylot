@@ -25,6 +25,8 @@ export default async function LearnPage() {
   }
 
   const resume = progression.resume
+  // "start" until the learner has actually done anything; "continue" after
+  const hasBegun = progression.exercises.some((e) => e.status === 'passed' || e.attemptsCount > 0)
 
   return (
     <main className="fx-scanlines min-h-screen" style={{ background: 'var(--background)' }}>
@@ -48,7 +50,7 @@ export default async function LearnPage() {
           <Link
             href={`/learn/${resume.chapterId}/${resume.lessonDir}`}
             data-testid="resume-link"
-            className="btn-press mb-8 block p-4"
+            className="btn-press btn-anim mb-8 block p-4"
             style={{
               border: 'var(--pane-border-w) solid var(--pane-border-strong)',
               background: 'var(--pane-bg)',
@@ -59,7 +61,7 @@ export default async function LearnPage() {
               className="text-[10px] font-bold uppercase tracking-[0.25em]"
               style={{ color: 'var(--status-pass)' }}
             >
-              ▸ continue
+              ▸ {hasBegun ? 'continue' : 'start'}
             </span>
             <div className="mt-1 text-[14px] font-bold" style={{ color: 'var(--prose-fg)' }}>
               {resume.title}

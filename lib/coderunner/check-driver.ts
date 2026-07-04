@@ -38,17 +38,31 @@ def _pylot_snapshot(ns):
         out.append({'name': name, 'type': type(val).__name__, 'repr': r})
     return out
 
+def _pylot_fmt_output(s):
+    # human display of an output value: trailing newline is print()'s business,
+    # not the learner's; real newlines render as real lines, not '\n' soup
+    s = s.rstrip('\n')
+    if '\n' in s:
+        return '\n' + '\n'.join('    ' + line for line in s.split('\n'))
+    return repr(s) if s == '' or s != s.strip() else s
+
 def _pylot_check_stdout(chk, stdout, ns, exc):
     import re
     if chk.get('equals') is not None:
         ok = stdout == chk['equals'] or stdout.rstrip('\n') == chk['equals'].rstrip('\n')
-        return ok, f"expected output {chk['equals']!r}, got {stdout!r}"
+        if ok:
+            return True, 'output matched'
+        return False, f"expected output: {_pylot_fmt_output(chk['equals'])}\ngot: {_pylot_fmt_output(stdout)}"
     if chk.get('contains') is not None:
         ok = chk['contains'] in stdout
-        return ok, f"expected output to contain {chk['contains']!r}, got {stdout!r}"
+        if ok:
+            return True, 'output matched'
+        return False, f"expected output to contain: {_pylot_fmt_output(chk['contains'])}\ngot: {_pylot_fmt_output(stdout)}"
     if chk.get('regex') is not None:
         ok = re.search(chk['regex'], stdout) is not None
-        return ok, f"expected output to match /{chk['regex']}/, got {stdout!r}"
+        if ok:
+            return True, 'output matched'
+        return False, f"expected output to match /{chk['regex']}/\ngot: {_pylot_fmt_output(stdout)}"
     return False, 'stdout check has no equals/contains/regex'
 
 def _pylot_check_state(chk, stdout, ns, exc):

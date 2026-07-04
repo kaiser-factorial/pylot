@@ -70,21 +70,22 @@ exercises:
   - id: py-basics/00-hello/04-fix-the-javascript
     title: "Fix: a JS speaker wrote this"
     kind: fix-bug
-    difficulty: 2
+    difficulty: 1
     prompt: |
-      This code was written by someone whose fingers still think in JavaScript
-      (the attempt log says it was you, three days ago). It should print `no`.
-      Fix it so it runs — read the error messages from the bottom up; they tell
-      you exactly which line to look at.
-    concepts: [variables, indentation, comparison, errors-reading]
+      This code was written by someone whose fingers still think in
+      JavaScript. (For at least one learner, this is a verbatim line from
+      their own attempt log. No further comment.) It should print `no` —
+      the if/else is fine, but Python chokes on the very first line. Run it,
+      read the error, fix it.
+    concepts: [variables, errors-reading]
     starter_code: |
-      let x=1
-      let y=2
+      let x = 1
+      let y = 2
 
-      if(x==y)
-      print("yes")
-      else
-      print("no")
+      if x == y:
+          print("yes")
+      else:
+          print("no")
     reference_solution: |
       x = 1
       y = 2
@@ -98,8 +99,6 @@ exercises:
         equals: "no"
       - type: ast
         requires: [If, Compare]
-        message: "keep the if/else structure — fix it, don't replace it"
+        message: "keep the if/else structure — fix the declarations, don't replace the logic"
     hints:
-      - "Python has no `let` — assignment alone declares the variable."
-      - "Conditions don't need parentheses, but `if` and `else` lines must end with a colon `:`."
-      - "The body of an if/else must be indented (4 spaces is the convention)."
+      - "Python has no `let` — assignment alone declares the variable. There are two of them."

@@ -37,6 +37,14 @@ async function waitForReady(page: Page) {
   )
 }
 
+/** The briefing (lesson prose) collapses by default once tasks are passed. */
+async function ensureBriefingOpen(page: Page) {
+  if ((await page.locator('.lesson-prose').count()) === 0) {
+    await page.getByTestId('briefing-toggle').click()
+    await page.locator('.lesson-prose').waitFor({ state: 'visible' })
+  }
+}
+
 async function setEditor(page: Page, code: string) {
   await page.locator('.cm-content').click()
   await page.keyboard.press('ControlOrMeta+A')
@@ -128,7 +136,8 @@ async function main() {
   wipe.close()
 
   const server = spawn('npx', ['next', 'dev', '-p', String(PORT)], {
-    env: { ...process.env, PYLOT_DB_PATH: scratchDb },
+    // own build dir so this coexists with a running `npm run dev`
+    env: { ...process.env, PYLOT_DB_PATH: scratchDb, PYLOT_DIST_DIR: '.next-verify' },
     stdio: 'pipe',
   })
   server.stdout.on('data', () => {})
@@ -279,6 +288,7 @@ async function main() {
     check('theme toggle persists across sessions', themePersisted === 'primary')
 
     // primary theme: readability + highlighting + no scanlines
+    await ensureBriefingOpen(page)
     const primaryProseContrast = await page
       .locator('.lesson-prose p')
       .first()

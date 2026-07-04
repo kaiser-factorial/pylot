@@ -1,15 +1,17 @@
 'use client'
 
 // The three-pane Onramp loop (ROADMAP Phase 1, ARCHITECTURE §4.1):
-//   lesson pane (MDX + task list + current task card)
+//   lesson pane (sticky progress strip → collapsible briefing → stacked task cards)
 //   work pane   (CodeMirror editor / predict-output prompt, Run/Submit, console + checks)
 //   workspace   (live variable table, side-collapsible)
 //
 // Run = exploratory: executes without checks, feeds console + workspace only.
-// Submit = graded: executes with the exercise's checks, appends an attempt row
-// (graded:true also upserts progress server-side), advances the task on pass.
+// Submit = graded (it runs the code itself — no prior Run needed): executes with
+// the exercise's checks, appends an attempt row (graded:true also upserts
+// progress server-side), and lights up the next task card in the stack.
+// Shortcuts: Mod-Enter = run, Mod-Shift-Enter = submit.
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { PyodideRunner, type RunResult } from '@/lib/coderunner'
 import type { ClientExercise } from '@/lib/content/load'
 import type { ExerciseStatus } from '@/lib/progression'
@@ -51,6 +53,13 @@ type RunnerStatus = 'booting' | 'ready' | 'running'
 
 const normalizeOutput = (s: string) => s.replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').replace(/\n+$/, '')
 
+/** Multi-line values render as indented lines, matching the Python driver. */
+const fmtOutput = (s: string) => {
+  const t = s.replace(/\n+$/, '')
+  if (t.includes('\n')) return '\n' + t.split('\n').map((l) => `    ${l}`).join('\n')
+  return t === '' || t !== t.trim() ? JSON.stringify(t) : t
+}
+
 export function Workbench({
   chapterTitle,
   lessonTitle,
@@ -66,6 +75,8 @@ export function Workbench({
   const [statuses, setStatuses] = useState<Record<string, ExerciseStatus>>(() =>
     Object.fromEntries(tasks.map((t) => [t.exercise.id, t.status]))
   )
+  const anyPassedHere = tasks.some((t) => t.status === 'passed')
+  const [briefingOpen, setBriefingOpen] = useState(!anyPassedHere)
   const [codeById, setCodeById] = useState<Record<string, string>>({})
   const [predictionById, setPredictionById] = useState<Record<string, string>>({})
   const [resultById, setResultById] = useState<Record<string, RunResult | null>>({})
@@ -83,8 +94,8 @@ export function Workbench({
   const result = resultById[ex.id] ?? null
   const submitted = submittedById[ex.id] ?? null
   const passed = statuses[ex.id] === 'passed'
-  const revealed = hintsRevealed[ex.id] ?? 0
-  const allPassed = tasks.every((t) => statuses[t.exercise.id] === 'passed')
+  const passedCount = tasks.filter((t) => statuses[t.exercise.id] === 'passed').length
+  const allPassed = passedCount === tasks.length
   const nextTask = tasks.slice(taskIndex + 1).find((t) => statuses[t.exercise.id] !== 'locked')
 
   useEffect(() => {
@@ -104,7 +115,7 @@ export function Workbench({
   }
 
   async function runExploratory() {
-    if (!runnerRef.current || runnerStatus !== 'ready') return
+    if (!runnerRef.current || runnerStatus !== 'ready' || isPredict || ex.sections.length > 0) return
     setRunnerStatus('running')
     const res = await runnerRef.current.run(code)
     setResultById((m) => ({ ...m, [ex.id]: res }))
@@ -112,7 +123,8 @@ export function Workbench({
   }
 
   async function submit() {
-    if (!runnerRef.current || runnerStatus !== 'ready') return
+    if (!runnerRef.current || runnerStatus !== 'ready' || ex.sections.length > 0) return
+    if (isPredict && prediction.trim() === '') return
     setRunnerStatus('running')
     const started = performance.now()
     const codeToRun = isPredict ? ex.starter_code : code
@@ -132,7 +144,7 @@ export function Workbench({
             passed: ok,
             detail: ok
               ? 'your prediction matched the real output'
-              : `you predicted ${JSON.stringify(prediction)} — the code actually printed ${JSON.stringify(res.stdout)}`,
+              : `you predicted: ${fmtOutput(prediction)}\nthe code actually printed: ${fmtOutput(res.stdout)}`,
           },
         ],
         passed: res.passed && ok,
@@ -175,33 +187,117 @@ export function Workbench({
     })
   }
 
-  const statusIcon = (id: string, idx: number) => {
-    const s = statuses[id]
-    if (s === 'passed') return <span style={{ color: 'var(--status-pass)' }}>✓</span>
-    if (id === currentId) return <span style={{ color: 'var(--pane-title)' }}>▸</span>
-    if (s === 'locked') return <span style={{ color: 'var(--muted-foreground)' }}>·</span>
-    return <span style={{ color: 'var(--muted-foreground)' }}>{idx + 1}</span>
-  }
+  // NOTE: keep the header's children as plain inline JSX. A memoized element
+  // variable next to the RSC slot made React reconcile them as a dynamic
+  // unkeyed array → spurious "unique key" dev warning on re-render.
+  const runnerBadgeColor =
+    runnerStatus === 'ready'
+      ? 'var(--status-pass)'
+      : runnerStatus === 'running'
+        ? 'var(--status-warn)'
+        : 'var(--muted-foreground)'
 
-  const runnerBadge = useMemo(
-    () => (
-      <span
-        data-testid="runner-status"
-        className="text-[9px] uppercase tracking-[0.2em]"
+  // ---------------------------------------------------------- task cards ---
+  function TaskCard({ t, i }: { t: WorkbenchTask; i: number }) {
+    const id = t.exercise.id
+    const status = statuses[id]
+    const isCurrent = id === currentId
+    const isLocked = status === 'locked'
+    const isPassed = status === 'passed'
+    const revealed = hintsRevealed[id] ?? 0
+    const expanded = isCurrent
+
+    const borderColor = isCurrent
+      ? 'var(--pane-border-strong)'
+      : isPassed
+        ? 'color-mix(in srgb, var(--status-pass) 45%, var(--pane-bg))'
+        : 'var(--border)'
+
+    return (
+      <div
+        data-testid={`task-card-${i}`}
+        className="transition-all duration-150"
         style={{
-          color:
-            runnerStatus === 'ready'
-              ? 'var(--status-pass)'
-              : runnerStatus === 'running'
-                ? 'var(--status-warn)'
-                : 'var(--muted-foreground)',
+          border: `var(--pane-border-w) solid ${borderColor}`,
+          background: isCurrent
+            ? 'color-mix(in srgb, var(--pane-title) 4%, transparent)'
+            : 'transparent',
+          opacity: isLocked ? 0.45 : 1,
         }}
       >
-        ● {runnerStatus === 'booting' ? 'python booting…' : runnerStatus}
-      </span>
-    ),
-    [runnerStatus]
-  )
+        <button
+          type="button"
+          data-testid={`task-nav-${i}`}
+          disabled={isLocked}
+          onClick={() => setCurrentId(id)}
+          className="btn-anim flex w-full items-center gap-2 px-3 py-2 text-left disabled:cursor-not-allowed"
+          aria-expanded={expanded}
+        >
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.2em]"
+            style={{
+              color: isCurrent ? 'var(--pane-title)' : isPassed ? 'var(--status-pass)' : 'var(--muted-foreground)',
+            }}
+          >
+            {isPassed ? '✓' : isLocked ? '🔒' : isCurrent ? '▸' : '·'} task {i + 1}
+          </span>
+          <span
+            className="truncate text-[12px]"
+            style={{ color: isCurrent ? 'var(--prose-fg)' : 'var(--muted-foreground)' }}
+          >
+            {t.exercise.title}
+          </span>
+          <span className="ml-auto flex flex-shrink-0 items-center gap-2">
+            <KindBadge kind={t.exercise.kind} />
+            <span className="text-[10px]">
+              <DifficultyDots level={t.exercise.difficulty} />
+            </span>
+          </span>
+        </button>
+
+        {expanded && (
+          <div className="px-3 pb-3">
+            <p className="whitespace-pre-wrap text-[13px] leading-6" data-testid="task-prompt">
+              <InlineCode text={t.exercise.prompt.trim()} />
+            </p>
+
+            {t.exercise.hints.length > 0 && (
+              <div className="mt-3 space-y-1">
+                {t.exercise.hints.slice(0, revealed).map((h, hi) => (
+                  <p
+                    key={hi}
+                    data-testid={`hint-${hi}`}
+                    className="text-[12px] leading-5"
+                    style={{ color: 'var(--status-warn)' }}
+                  >
+                    hint {hi + 1}: <InlineCode text={h} />
+                  </p>
+                ))}
+                {revealed < t.exercise.hints.length && !isPassed && (
+                  <WorkbenchButton variant="ghost" onClick={revealHint} testId="reveal-hint">
+                    reveal hint ({revealed}/{t.exercise.hints.length} used)
+                  </WorkbenchButton>
+                )}
+              </div>
+            )}
+
+            {isPassed && (
+              <div className="mt-3 flex items-center gap-3">
+                <span className="text-[12px] font-bold" style={{ color: 'var(--status-pass)' }}>
+                  ✓ passed
+                </span>
+                {isCurrent && nextTask && (
+                  <WorkbenchButton onClick={() => setCurrentId(nextTask.exercise.id)} testId="next-task">
+                    next task ▸
+                  </WorkbenchButton>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="fx-scanlines flex h-screen flex-col" style={{ background: 'var(--background)' }}>
@@ -218,8 +314,14 @@ export function Workbench({
           {chapterTitle} · {lessonTitle}
         </span>
         <div className="ml-auto flex items-center gap-2">
-          {runnerBadge}
-          {themeToggleSlot}
+          <span
+            data-testid="runner-status"
+            className="text-[9px] uppercase tracking-[0.2em]"
+            style={{ color: runnerBadgeColor }}
+          >
+            ● {runnerStatus === 'booting' ? 'python booting…' : runnerStatus}
+          </span>
+          <span>{themeToggleSlot}</span>
         </div>
       </header>
 
@@ -233,81 +335,84 @@ export function Workbench({
         >
           {/* copy is blocked pane-wide: the learner types (product invariant) */}
           <div className="readable" onCopy={(e) => e.preventDefault()}>
-            <nav className="px-4 pt-3" data-testid="task-list">
-              <ul className="space-y-1">
-                {tasks.map((t, i) => {
-                  const locked = statuses[t.exercise.id] === 'locked'
-                  return (
-                    <li key={t.exercise.id} className="flex items-center gap-2 text-[12px]">
-                      <span className="w-4 text-center">{statusIcon(t.exercise.id, i)}</span>
-                      <button
-                        type="button"
-                        data-testid={`task-nav-${i}`}
-                        disabled={locked}
-                        onClick={() => setCurrentId(t.exercise.id)}
-                        className={`text-left disabled:cursor-not-allowed ${
-                          t.exercise.id === currentId ? 'font-bold' : ''
-                        }`}
-                        style={{
-                          color: locked
-                            ? 'var(--muted-foreground)'
-                            : t.exercise.id === currentId
-                              ? 'var(--pane-title)'
-                              : 'var(--prose-fg)',
-                          opacity: locked ? 0.5 : 1,
-                        }}
-                      >
-                        {t.exercise.title}
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            </nav>
-
-            <div className="lesson-prose px-4 py-3">{lessonSlot}</div>
-
-            {/* current task card */}
+            {/* persistent "where am I" strip */}
             <div
-              data-testid="task-card"
-              className="mx-4 mb-4 p-3"
+              data-testid="task-list"
+              className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2"
               style={{
-                border: 'var(--pane-border-w) solid var(--pane-border-strong)',
-                background: 'color-mix(in srgb, var(--pane-title) 4%, transparent)',
+                background: 'var(--pane-bg)',
+                borderBottom: '1px solid var(--pane-border)',
               }}
             >
-              <div className="mb-2 flex items-center gap-2">
-                <span
-                  className="text-[10px] font-bold uppercase tracking-[0.25em]"
-                  style={{ color: 'var(--pane-title)' }}
-                >
-                  task {taskIndex + 1}/{tasks.length}
-                </span>
-                <KindBadge kind={ex.kind} />
-                <span className="ml-auto text-[10px]">
-                  <DifficultyDots level={ex.difficulty} />
-                </span>
-              </div>
-              <p className="whitespace-pre-wrap text-[13px] leading-6" data-testid="task-prompt">
-                <InlineCode text={ex.prompt.trim()} />
-              </p>
-
-              {ex.hints.length > 0 && (
-                <div className="mt-3 space-y-1">
-                  {ex.hints.slice(0, revealed).map((h, i) => (
-                    <p
-                      key={i}
-                      data-testid={`hint-${i}`}
-                      className="text-[12px] leading-5"
-                      style={{ color: 'var(--status-warn)' }}
+              <span
+                className="text-[10px] font-bold uppercase tracking-[0.25em]"
+                style={{ color: 'var(--pane-title)' }}
+              >
+                {allPassed ? 'lesson complete' : `task ${taskIndex + 1}/${tasks.length}`}
+              </span>
+              <span className="ml-auto flex items-center gap-1 text-[11px]">
+                {tasks.map((t, i) => {
+                  const s = statuses[t.exercise.id]
+                  return (
+                    <span
+                      key={t.exercise.id}
+                      title={t.exercise.title}
+                      style={{
+                        color:
+                          s === 'passed'
+                            ? 'var(--status-pass)'
+                            : t.exercise.id === currentId
+                              ? 'var(--pane-title)'
+                              : 'var(--muted)',
+                      }}
                     >
-                      hint {i + 1}: <InlineCode text={h} />
-                    </p>
-                  ))}
-                  {revealed < ex.hints.length && !passed && (
-                    <WorkbenchButton variant="ghost" onClick={revealHint} testId="reveal-hint">
-                      reveal hint ({revealed}/{ex.hints.length} used)
-                    </WorkbenchButton>
+                      {s === 'passed' ? '✓' : '●'}
+                    </span>
+                  )
+                })}
+              </span>
+            </div>
+
+            {/* collapsible briefing (the lesson prose) */}
+            <div className="px-4 pt-3">
+              <div style={{ border: '1px solid var(--pane-border)' }}>
+                <button
+                  type="button"
+                  data-testid="briefing-toggle"
+                  onClick={() => setBriefingOpen((v) => !v)}
+                  className="btn-anim flex w-full items-center gap-2 px-3 py-2 text-left"
+                  aria-expanded={briefingOpen}
+                >
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-[0.25em]"
+                    style={{ color: 'var(--pane-title)' }}
+                  >
+                    briefing
+                  </span>
+                  <span className="ml-auto text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                    {briefingOpen ? '▾' : '▸'}
+                  </span>
+                </button>
+                {briefingOpen && <div className="lesson-prose px-3 pb-3">{lessonSlot}</div>}
+              </div>
+            </div>
+
+            {/* the task stack: every task in the lesson, states at a glance */}
+            <div className="space-y-2 px-4 py-3">
+              {tasks.map((t, i) => (
+                <TaskCard key={t.exercise.id} t={t} i={i} />
+              ))}
+
+              {allPassed && (
+                <div className="pt-2">
+                  {nav.nextHref ? (
+                    <a href={nav.nextHref} data-testid="next-lesson" className="block">
+                      <WorkbenchButton>next lesson ▸</WorkbenchButton>
+                    </a>
+                  ) : (
+                    <a href={nav.learnHref} className="block">
+                      <WorkbenchButton>back to the map ▸</WorkbenchButton>
+                    </a>
                   )}
                 </div>
               )}
@@ -317,51 +422,62 @@ export function Workbench({
 
         {/* ------------------------------------------------------ work pane */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
-          <Panel id="editor" title={`editor — ${ex.title}`} fill className="min-h-0 flex-[3]">
-            {ex.sections.length > 0 ? (
-              <p className="p-4 text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
-                sectioned exercises arrive in Phase 3
-              </p>
-            ) : isPredict ? (
-              <div className="flex h-full min-h-0 flex-col gap-2 p-3">
-                <p className="text-[11px] uppercase tracking-[0.15em]" style={{ color: 'var(--muted-foreground)' }}>
-                  read the code and run it in your head — no editor for this one:
+          <Panel
+            id="editor"
+            title={`editor — ${ex.title}`}
+            fill
+            className="min-h-0 flex-[3]"
+            bodyClassName="flex flex-col"
+          >
+            <div className="flex min-h-0 flex-1 flex-col">
+              {ex.sections.length > 0 ? (
+                <p className="p-4 text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
+                  sectioned exercises arrive in Phase 3
                 </p>
-                <CodeBlock code={ex.starter_code} className="min-h-0 flex-shrink overflow-auto" />
-                <label
-                  className="mt-1 text-[11px] uppercase tracking-[0.15em]"
-                  htmlFor="prediction"
-                  style={{ color: 'var(--muted-foreground)' }}
-                >
-                  what will it print? (exactly, line by line)
-                </label>
-                <textarea
-                  id="prediction"
-                  data-testid="prediction-input"
-                  value={prediction}
-                  onChange={(e) => setPredictionById((m) => ({ ...m, [ex.id]: e.target.value }))}
-                  spellCheck={false}
-                  rows={4}
-                  className="readable w-full resize-y p-2 text-[13px] outline-none"
-                  style={{
-                    background: 'var(--editor-bg)',
-                    color: 'var(--editor-fg)',
-                    border: '1px solid var(--pane-border)',
-                    caretColor: 'var(--editor-cursor)',
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="flex h-full min-h-0 flex-col">
+              ) : isPredict ? (
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
+                  <p className="text-[11px] uppercase tracking-[0.15em]" style={{ color: 'var(--muted-foreground)' }}>
+                    read the code and run it in your head — no editor for this one:
+                  </p>
+                  <CodeBlock code={ex.starter_code} className="flex-shrink-0" />
+                  <label
+                    className="mt-1 text-[11px] uppercase tracking-[0.15em]"
+                    htmlFor="prediction"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    what will it print? (exactly, line by line)
+                  </label>
+                  <textarea
+                    id="prediction"
+                    data-testid="prediction-input"
+                    value={prediction}
+                    onChange={(e) => setPredictionById((m) => ({ ...m, [ex.id]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit()
+                    }}
+                    spellCheck={false}
+                    rows={4}
+                    className="readable w-full flex-shrink-0 resize-y p-2 text-[13px] outline-none"
+                    style={{
+                      background: 'var(--editor-bg)',
+                      color: 'var(--editor-fg)',
+                      border: '1px solid var(--pane-border)',
+                      caretColor: 'var(--editor-cursor)',
+                    }}
+                  />
+                </div>
+              ) : (
                 <PythonEditor
                   value={code}
                   onChange={(next) => setCodeById((m) => ({ ...m, [ex.id]: next }))}
+                  onRun={runExploratory}
+                  onSubmit={submit}
                 />
-              </div>
-            )}
+              )}
+            </div>
 
             <div
-              className="flex items-center gap-2 px-3 py-2"
+              className="flex flex-shrink-0 items-center gap-2 px-3 py-2"
               style={{ borderTop: '1px solid var(--pane-border)' }}
             >
               {!isPredict && (
@@ -370,6 +486,7 @@ export function Workbench({
                   onClick={runExploratory}
                   disabled={runnerStatus !== 'ready' || ex.sections.length > 0}
                   testId="run-button"
+                  title="⌘↵"
                 >
                   {runnerStatus === 'running' ? 'running…' : 'run ▸'}
                 </WorkbenchButton>
@@ -378,6 +495,7 @@ export function Workbench({
                 onClick={submit}
                 disabled={runnerStatus !== 'ready' || ex.sections.length > 0 || (isPredict && prediction.trim() === '')}
                 testId="submit-button"
+                title={isPredict ? '⌘↵' : '⌘⇧↵'}
               >
                 {isPredict ? 'check prediction' : 'submit ✓'}
               </WorkbenchButton>
@@ -394,36 +512,10 @@ export function Workbench({
               {passed && (
                 <span
                   data-testid="passed-banner"
-                  className="ml-auto flex items-center gap-3 text-[12px] font-bold"
+                  className="ml-auto text-[12px] font-bold"
                   style={{ color: 'var(--status-pass)' }}
                 >
                   ✓ passed
-                  {nextTask ? (
-                    <WorkbenchButton
-                      variant="ghost"
-                      onClick={() => setCurrentId(nextTask.exercise.id)}
-                      testId="next-task"
-                    >
-                      next task ▸
-                    </WorkbenchButton>
-                  ) : allPassed && nav.nextHref ? (
-                    <a
-                      href={nav.nextHref}
-                      data-testid="next-lesson"
-                      className="text-[11px] font-bold uppercase tracking-[0.15em] underline"
-                      style={{ color: 'var(--pane-title)' }}
-                    >
-                      next lesson ▸
-                    </a>
-                  ) : allPassed ? (
-                    <a
-                      href={nav.learnHref}
-                      className="text-[11px] font-bold uppercase tracking-[0.15em] underline"
-                      style={{ color: 'var(--pane-title)' }}
-                    >
-                      lesson complete — back to map ▸
-                    </a>
-                  ) : null}
                 </span>
               )}
             </div>

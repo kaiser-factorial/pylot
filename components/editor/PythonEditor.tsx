@@ -78,15 +78,30 @@ const pylotChrome = EditorView.theme({
 type PythonEditorProps = {
   value: string
   onChange: (code: string) => void
+  /** Mod-Enter */
+  onRun?: () => void
+  /** Mod-Shift-Enter */
+  onSubmit?: () => void
   readOnly?: boolean
   className?: string
 }
 
-export function PythonEditor({ value, onChange, readOnly = false, className = '' }: PythonEditorProps) {
+export function PythonEditor({
+  value,
+  onChange,
+  onRun,
+  onSubmit,
+  readOnly = false,
+  className = '',
+}: PythonEditorProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
+  const onRunRef = useRef(onRun)
+  onRunRef.current = onRun
+  const onSubmitRef = useRef(onSubmit)
+  onSubmitRef.current = onSubmit
 
   useEffect(() => {
     if (!hostRef.current) return
@@ -104,7 +119,14 @@ export function PythonEditor({ value, onChange, readOnly = false, className = ''
         python(),
         syntaxHighlighting(pylotHighlight),
         pylotChrome,
-        keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
+        keymap.of([
+          // run/submit shortcuts come before defaults so Mod-Enter wins
+          { key: 'Mod-Enter', run: () => (onRunRef.current?.(), true) },
+          { key: 'Mod-Shift-Enter', run: () => (onSubmitRef.current?.(), true) },
+          indentWithTab,
+          ...defaultKeymap,
+          ...historyKeymap,
+        ]),
         EditorState.readOnly.of(readOnly),
         EditorView.updateListener.of((u) => {
           if (u.docChanged) onChangeRef.current(u.state.doc.toString())

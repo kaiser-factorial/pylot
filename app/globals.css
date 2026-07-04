@@ -337,6 +337,49 @@
   letter-spacing: 0.1em;
 }
 
+/* Button feedback. .btn-anim = hover/press motion for anything clickable;
+   .btn-press adds the Bauhaus shadow-collapse press under primary. */
+.btn-anim {
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease,
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+.btn-anim:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+[data-theme="cyber"] .btn-anim:hover:not(:disabled) {
+  box-shadow: 0 0 8px color-mix(in srgb, var(--pane-title) 30%, transparent);
+}
+.btn-anim:active:not(:disabled) {
+  transform: translate(1px, 1px);
+}
+
+/* Workbench buttons (run/submit/next/…) — all colors from tokens */
+.wb-btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: var(--pane-border-w) solid var(--pane-border-strong);
+  box-shadow: var(--pane-shadow);
+}
+[data-theme="primary"] .wb-btn-primary:hover:not(:disabled) {
+  filter: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 8px 8px 0px var(--pane-border);
+}
+.wb-btn-ghost {
+  background: transparent;
+  color: var(--pane-title);
+  border: 1px solid var(--pane-border);
+}
+.wb-btn-ghost:hover:not(:disabled) {
+  filter: none;
+  border-color: var(--pane-border-strong);
+  background: color-mix(in srgb, var(--pane-title) 8%, transparent);
+}
+
 /* Bauhaus button press (primary): shadow collapses, element translates */
 [data-theme="primary"] .btn-press:active {
   transform: translate(4px, 4px);

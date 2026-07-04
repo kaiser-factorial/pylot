@@ -28,3 +28,4 @@ next-env.d.ts
 
 # Pyodide assets copied from node_modules by scripts/copy-pyodide.mjs
 /public/pyodide/
+.next-verify/

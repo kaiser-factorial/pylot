@@ -95,7 +95,7 @@ export function Panel({
       data-testid={`panel-toggle-${id}`}
       aria-label={isOpen ? `Collapse ${title}` : `Expand ${title}`}
       onClick={() => setOpen((v) => !v)}
-      className="px-1"
+      className="btn-anim px-1"
     >
       <svg
         width="10"
@@ -143,7 +143,7 @@ export function Panel({
             data-testid={`panel-toggle-${id}`}
             aria-label={isOpen ? `Collapse ${title}` : `Expand ${title}`}
             onClick={() => setOpen((v) => !v)}
-            className="flex w-9 flex-shrink-0 items-center justify-center"
+            className="btn-anim flex w-9 flex-shrink-0 items-center justify-center"
             style={{
               borderLeft: isOpen ? `1px solid var(--pane-border)` : 'none',
               color: 'var(--pane-title)',

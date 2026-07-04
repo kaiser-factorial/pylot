@@ -5,22 +5,23 @@ exercises:
     difficulty: 1
     prompt: |
       `/` and `//` are different operators with different answers. Predict all
-      three lines exactly — including how Python writes each number.
+      three lines exactly — including how Python writes each number. (Yes,
+      the lesson showed you the rule. Now it's your turn with fresh numbers.)
     concepts: [numbers, printing]
     starter_code: |
-      print(7 / 2)
-      print(7 // 2)
-      print(8 / 2)
+      print(9 / 4)
+      print(9 // 4)
+      print(6 / 3)
     reference_solution: |
-      print(7 / 2)
-      print(7 // 2)
-      print(8 / 2)
+      print(9 / 4)
+      print(9 // 4)
+      print(6 / 3)
     checks:
       - type: stdout
         equals: |
-          3.5
-          3
-          4.0
+          2.25
+          2
+          2.0
     hints:
       - "`/` always produces a float — even when the division is exact."
       - "How does Python print a float that happens to be a whole number?"
