@@ -32,6 +32,30 @@ and the checks, not by reading the code.
    remote runner in Phase 5). Never eval learner code on the Next.js server.
 7. **No copy-paste affordance** from lesson content into the editor. The learner types.
 
+## Build notes (learned in Phase 2)
+- **AI SDK v7 renamed half its surface** vs. what models remember: `system` →
+  `instructions`, `onFinish` → `onEnd`, `stepCountIs` → `isStepCount`, tool
+  `parameters` → `inputSchema`. `node_modules/ai/docs/` ships the real docs — grep
+  them before writing AI SDK code.
+- **`server-only` modules can't be imported by tsx scripts** — eval/verify scripts
+  drive the real HTTP endpoint on a scratch-DB dev server instead (also the more
+  honest test). `drizzle-kit push` needs `--force` when non-TTY.
+- **Teacher prompt = policy**: `lib/teacher/prompt.ts` edits require
+  `npm run eval:teacher` green before landing (invariant #1). Static prefix stays
+  byte-stable (prompt cache); dynamic context only in `renderTeacherContext`.
+- **Two hint counters**: `hints_used` (total honest consumption, feeds struggle) vs
+  `authored_hints_revealed` (drives the UI's revealed list). The teacher's
+  `record_hint` tool maintains both; never merge them.
+- **All AI spend goes through `lib/teacher/spend.ts`** (`ai_usage` ledger, hard
+  $10/month cap, 429 on exhaustion). Future AI features (reward copy, rubric
+  grading) must use the same guard with their own `kind`.
+- Model = config: `PYLOT_TEACHER_MODEL` ("provider/model"); `anthropic/*` resolves
+  to the direct provider with `ANTHROPIC_API_KEY`, else the Vercel AI Gateway.
+- Eval forbidden-string regexes need lookbehinds — buggy learner code contains the
+  fix as a substring (`let x = 1` ⊃ `x = 1`).
+- The auto-mode classifier blocks writes to `data/pylot.db` — correctly. Scratch-DB
+  pattern for automation; real-DB one-liners are the owner's.
+
 ## Build notes (learned in Phase 1)
 - **Theme architecture**: two themes switch via `<html data-theme="cyber|primary">`,
   server-rendered from `users.settings` (no FOUC). All component color/effect styling goes

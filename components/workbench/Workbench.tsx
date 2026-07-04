@@ -18,6 +18,7 @@ import type { ExerciseStatus } from '@/lib/progression'
 import { Panel } from '@/components/ui/Panel'
 import { CodeBlock } from '@/components/ui/CodeBlock'
 import { PythonEditor } from '@/components/editor/PythonEditor'
+import { TeacherChat, type TeacherSeed } from '@/components/teacher/TeacherChat'
 import {
   CheckReportView,
   Console,
@@ -32,6 +33,7 @@ export type WorkbenchTask = {
   exercise: ClientExercise
   status: ExerciseStatus
   hintsUsed: number
+  authoredHintsRevealed: number
 }
 
 type WorkbenchProps = {
@@ -82,8 +84,13 @@ export function Workbench({
   const [resultById, setResultById] = useState<Record<string, RunResult | null>>({})
   const [submittedById, setSubmittedById] = useState<Record<string, RunResult | null>>({})
   const [hintsRevealed, setHintsRevealed] = useState<Record<string, number>>(() =>
-    Object.fromEntries(tasks.map((t) => [t.exercise.id, Math.min(t.hintsUsed, t.exercise.hints.length)]))
+    Object.fromEntries(
+      tasks.map((t) => [t.exercise.id, Math.min(t.authoredHintsRevealed, t.exercise.hints.length)])
+    )
   )
+  // right pane tabs (ARCHITECTURE §4.1: teacher chat shares the pane as a tab)
+  const [rightTab, setRightTab] = useState<'workspace' | 'teacher'>('workspace')
+  const [teacherSeed, setTeacherSeed] = useState<TeacherSeed | null>(null)
 
   const taskIndex = Math.max(0, tasks.findIndex((t) => t.exercise.id === currentId))
   const task = tasks[taskIndex]
@@ -190,6 +197,22 @@ export function Workbench({
   // NOTE: keep the header's children as plain inline JSX. A memoized element
   // variable next to the RSC slot made React reconcile them as a dynamic
   // unkeyed array → spurious "unique key" dev warning on re-render.
+  /** Pre-seed the teacher thread with the actual failure (learner still hits send). */
+  function askTeacherAboutFailure() {
+    const res = submitted
+    let detail = ''
+    if (res) {
+      const failing = res.checks.filter((c) => c.passed === false)
+      detail = failing.map((c) => `${c.type}: ${c.detail}`).join('\n')
+      if (!detail && res.error) detail = `${res.error.type}: ${res.error.message}`
+    }
+    setTeacherSeed({
+      text: `my submission just failed this check — can you help me see what's going on?\n\n${detail}`.trim(),
+      nonce: Date.now(),
+    })
+    setRightTab('teacher')
+  }
+
   const runnerBadgeColor =
     runnerStatus === 'ready'
       ? 'var(--status-pass)'
@@ -528,12 +551,59 @@ export function Workbench({
               placeholder={isPredict ? 'submit your prediction to see the real output' : 'run your code to see output'}
             />
             {submitted && <CheckReportView checks={submitted.checks} />}
+            {submitted && !submitted.passed && (
+              <div className="px-3 pb-3">
+                <WorkbenchButton variant="ghost" onClick={askTeacherAboutFailure} testId="ask-teacher">
+                  ask the teacher about this ▸
+                </WorkbenchButton>
+              </div>
+            )}
           </Panel>
         </div>
 
-        {/* ------------------------------------------------- workspace pane */}
-        <Panel id="workspace" title="workspace" collapse="side" fill className="w-72 flex-shrink-0">
-          <WorkspaceTable workspace={result?.workspace ?? []} />
+        {/* ------------------- right pane: workspace | teacher (tabbed) ---- */}
+        <Panel
+          id="workspace"
+          title={rightTab}
+          collapse="side"
+          fill
+          className={`${rightTab === 'teacher' ? 'w-96' : 'w-72'} flex-shrink-0 transition-all`}
+          bodyClassName="flex flex-col"
+        >
+          <div
+            className="flex flex-shrink-0 items-center gap-1 px-2 py-1.5"
+            style={{ borderBottom: '1px solid var(--pane-border)' }}
+          >
+            {(['workspace', 'teacher'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                data-testid={`right-tab-${tab}`}
+                onClick={() => setRightTab(tab)}
+                aria-selected={rightTab === tab}
+                className="btn-anim px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
+                style={{
+                  color: rightTab === tab ? 'var(--pane-title)' : 'var(--muted-foreground)',
+                  borderBottom:
+                    rightTab === tab ? '2px solid var(--pane-border-strong)' : '2px solid transparent',
+                }}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          {/* both tabs stay mounted so a streaming teacher reply survives a tab flip */}
+          <div className={rightTab === 'workspace' ? 'min-h-0 flex-1 overflow-auto' : 'hidden'}>
+            <WorkspaceTable workspace={result?.workspace ?? []} />
+          </div>
+          <div className={rightTab === 'teacher' ? 'min-h-0 flex-1' : 'hidden'}>
+            <TeacherChat
+              exerciseId={ex.id}
+              exerciseTitle={ex.title}
+              code={isPredict ? prediction : code}
+              seed={teacherSeed}
+            />
+          </div>
         </Panel>
       </div>
     </div>

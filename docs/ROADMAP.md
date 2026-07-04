@@ -14,7 +14,7 @@ Do not start phase N+1 with phase N's acceptance criteria unmet.
 | ~~Visual direction~~ | ✅ resolved | Port the owner's **Themez** design systems (`~/Projects/Themes/`): cyber-terminal theme as default, Bauhaus primary theme as the alternate, runtime-switchable — see Phase 1 theming work |
 | ccru license | deferred to distribution era | @lumpenspace's ccru library has **no published license** (all-rights-reserved by default). Owner will raise it with him in person (~mid-July 2026); no distribution is planned soon, so this is low-urgency — but it **hard-blocks any future distribution**, along with dataset/curriculum permissions from the professor (`pascal-assmt-refs/`). Record outcomes in `vendor/themez/ccru/UPSTREAM.md` |
 | ~~Spoiler policy~~ | ✅ resolved (2026-07-04) | Owner reviews app code and content *structure* freely, but does not read `reference_solution` blocks or generated answer keys for chapters she hasn't passed. Who vouches for solutions instead: `validate:content` (executes them against their own checks) **plus a review panel of Haiku subagents** (check robustness / pedagogy / contrast-accuracy lenses) run by the authoring agent after writing content |
-| Anthropic API key + monthly spend cap | Phase 2 | Teacher agent needs it; set a hard monthly budget before it ships |
+| ~~Anthropic API key + monthly spend cap~~ | ✅ resolved (2026-07-04) | **$10/month hard cap**, enforced server-side; key in `.env.local` (`ANTHROPIC_API_KEY`); default model `PYLOT_TEACHER_MODEL="anthropic/claude-sonnet-5"` (config, not code — raise cap/swap model without a deploy) |
 | Kaggle track picks | Phase 4 | Wait — the track schema will define exactly what shapes qualify; keep a running list of fun candidates meanwhile |
 | Remote runner vendor confirmation | Phase 5 | opbdh is the leading candidate; confirmed by the spike |
 | Auth provider + hosted DB | Phase 6 | Only if distribution actually happens |
@@ -72,7 +72,7 @@ has at least one exercise exercising it; a failing check shows expected-vs-actua
 both themes render the full lesson UI with matching editor syntax highlighting, the toggle
 persists across sessions, and code/prose areas pass the readability rules above.
 
-## Phase 2 — The teacher
+## Phase 2 — The teacher 🔶 (built 2026-07-04; offline checks green — awaiting owner: API key into `.env.local`, `npm run eval:teacher` + `npm run verify:phase2` passing with the key, the `authored_hints_revealed` backfill, and a personal playtest. See `docs/PHASE3-HANDOFF.md` §0 for the exact close-out list.)
 `/api/teacher` per ADR-005: server-side context assembly (lesson, code, check report, recent
 attempts, hint history), streaming chat UI in the right pane, hint-ladder system prompt,
 authored-hints-first policy, per-(user, exercise) chat persistence, hint-depth tracking.
@@ -91,9 +91,10 @@ the actual check failure, never a solution; evals pass; hints-used shows in prog
 
 *Phase 2 inputs collected during Phase 1 (see `docs/PHASE2-HANDOFF.md`): a seed list of
 real observed failure modes for the eval set (the owner's live playtest mistakes + attempt
-log), and an owner idea worth designing: a short "predict your own failure modes" quiz
-before a lesson, so the teacher sees common wrong turns before they happen (relates to the
-Phase 3 spaced-review slot; decide scope at Phase 2 or 3).*
+log — all 12 became eval cases), and an owner idea worth designing: a short "predict your
+own failure modes" quiz before a lesson. **Scope decision (Phase 2, 2026-07-04): deferred
+to Phase 3** — it belongs with the spaced-review slot, and its answers are declared/derived
+teacher-context signal, which is Phase 3's memory work anyway.*
 
 ## Phase 3 — Long-form + full vanilla curriculum
 Sectioned exercises (cumulative namespace, per-section checks/editors, section-aware teacher

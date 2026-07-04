@@ -12,9 +12,13 @@
     "db:seed": "tsx scripts/seed.ts",
     "validate:content": "tsx scripts/validate-content.ts",
     "verify:phase0": "tsx scripts/verify-phase0.ts",
-    "verify:phase1": "tsx scripts/verify-phase1.ts"
+    "verify:phase1": "tsx scripts/verify-phase1.ts",
+    "eval:teacher": "tsx scripts/eval-teacher.ts",
+    "verify:phase2": "tsx scripts/verify-phase2.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.8",
+    "@ai-sdk/react": "^4.0.16",
     "@codemirror/commands": "^6.10.4",
     "@codemirror/lang-python": "^6.2.1",
     "@codemirror/language": "^6.12.4",
