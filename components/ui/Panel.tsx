@@ -32,7 +32,10 @@ export function PanelHeader({
       className={`flex w-full items-center gap-2 px-3 py-2 ${className}`}
       onClick={onClick}
       aria-expanded={ariaExpanded}
-      style={{ borderBottom: `var(--pane-border-w) solid var(--pane-border)` }}
+      style={{
+        background: 'var(--pane-header-bg)',
+        borderBottom: `var(--pane-border-w) solid var(--pane-border)`,
+      }}
     >
       {leftSlot}
       <span
