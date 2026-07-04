@@ -1,0 +1,15 @@
+# OS junk
+.DS_Store
+
+# Dependencies & build output (Phase 0+)
+node_modules/
+.next/
+dist/
+
+# Local database (progress data — back up separately); root-anchored so
+# dataset dirs like pascal-assmt-refs/RMP/data/ stay tracked
+/data/
+
+# Env & secrets
+.env
+.env.*
