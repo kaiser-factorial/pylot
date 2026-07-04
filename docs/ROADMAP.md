@@ -30,7 +30,7 @@ run code → {stdout, stderr, traceback, workspace snapshot}, hard timeout via w
 and a variable table render; a row lands in `attempts`; `validate:content` passes on a
 sample exercise and fails on a deliberately broken one.
 
-## Phase 1 — The Onramp loop (MVP)
+## Phase 1 — The Onramp loop (MVP) ✅ (completed 2026-07-04; acceptance automated in `npm run verify:phase1`; owner completed Ch. 0–1 personally and signed off after a playtest-feedback round — see `docs/PHASE2-HANDOFF.md` for the state handed to Phase 2)
 Three-pane lesson UI (lesson MDX / editor + console / workspace panel). Check engine: stdout,
 state, function, ast, exception. Task progression with checkmarks, chapter nav, unlock rules
 from `curriculum.yaml`. Progress persistence + resume where you left off. Author **Ch. 0 and
@@ -88,6 +88,12 @@ a datasci-flavored example) and language-aware contrast (JS-background learner w
 
 **Done when:** mid-exercise "why is this failing?" yields a concept-level hint referencing
 the actual check failure, never a solution; evals pass; hints-used shows in progress data.
+
+*Phase 2 inputs collected during Phase 1 (see `docs/PHASE2-HANDOFF.md`): a seed list of
+real observed failure modes for the eval set (the owner's live playtest mistakes + attempt
+log), and an owner idea worth designing: a short "predict your own failure modes" quiz
+before a lesson, so the teacher sees common wrong turns before they happen (relates to the
+Phase 3 spaced-review slot; decide scope at Phase 2 or 3).*
 
 ## Phase 3 — Long-form + full vanilla curriculum
 Sectioned exercises (cumulative namespace, per-section checks/editors, section-aware teacher

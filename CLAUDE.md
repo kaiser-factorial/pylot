@@ -3,6 +3,10 @@
 Read before writing code: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), then
 [docs/ROADMAP.md](docs/ROADMAP.md) to find the current phase, then the ADRs relevant to what
 you're touching. [docs/CURRICULUM.md](docs/CURRICULUM.md) governs all content authoring.
+**If a `docs/PHASE<N>-HANDOFF.md` exists for your phase, it is required reading** — the
+previous phase's agent wrote it to hand you the seams, fixtures, and sprung traps
+(Phase 2: [docs/PHASE2-HANDOFF.md](docs/PHASE2-HANDOFF.md)). Write one for your successor
+when you close a phase.
 
 ## What this is
 A Python-learning web app (MATLAB-Onramp-style) for an owner with strong math/data-sci
@@ -50,6 +54,16 @@ and the checks, not by reading the code.
   devtools-level spoiler for the single-user era; revisit at distribution.
 - `input()` cannot run in the Pyodide worker (no stdin) — teach it in prose only until a
   runtime that has a terminal; exercises must not call it.
+- **RSC slot + memoized element = React key warning.** In a client component, don't put a
+  `useMemo`'d element variable next to a server-component slot prop as siblings — React
+  reconciles them as an unkeyed dynamic array. Inline the JSX (see Workbench header).
+- Button conventions: `.wb-btn-primary` / `.wb-btn-ghost` + `.btn-anim` (+ `.btn-press`)
+  give the theme-correct hover/press language (cyber: solid fill, dark text, stripes,
+  glow; bauhaus: shadow-grow lift / press-collapse). Use `WorkbenchButton`; never
+  hand-roll button colors.
+- `verify:phase1` + screenshot scripts coexist with a running `npm run dev` via
+  `PYLOT_DIST_DIR` (own build dir) and `PYLOT_DB_PATH` (scratch DB). The owner's real DB
+  now holds her genuine progress — automated runs must never write to it.
 
 ## Content authoring notes
 - Exercise IDs are stable path-style strings; never rename a shipped ID (the DB references it).
