@@ -35,7 +35,10 @@ Three-pane lesson UI (lesson MDX / editor + console / workspace panel). Check en
 state, function, ast, exception. Task progression with checkmarks, chapter nav, unlock rules
 from `curriculum.yaml`. Progress persistence + resume where you left off. Author **Ch. 0 and
 Ch. 1 in full** (they double as the content-pipeline shakedown). Predict-output, fill-blank,
-write-code, fix-bug exercise kinds working end to end.
+write-code, fix-bug exercise kinds working end to end. **`<LangContrast>` MDX component**
+(variants keyed by background language, rendered per profile — see CURRICULUM); author `js`
+variants throughout Ch. 0–1; until the Phase 2 survey exists, the seeded user's profile
+defaults to `{ background: "js" }`.
 
 **Theming** — port the owner's **Themez** design systems (`~/Projects/Themes/`, vendored
 into the repo with attribution): extract each theme's palette/borders/shadows/typography
@@ -77,9 +80,11 @@ Prompt eval set (≥10 cases: wrong code + question → expected behavior, incl.
 just give the solution").
 
 **Learner profile (ADR-006 layer 1):** optional skippable onboarding survey (why learning,
-background, target domain, dataset interests, hint-style preference) → `users.settings.profile`,
-editable in a settings view, injected into teacher context. Add an eval case showing
-goal-aware teaching (datasci-profile learner gets a datasci-flavored example).
+new-to-programming vs. experienced + primary language, target domain, dataset interests,
+hint-style preference) → `users.settings.profile`, editable in a settings view, injected
+into teacher context. Add eval cases for goal-aware teaching (datasci-profile learner gets
+a datasci-flavored example) and language-aware contrast (JS-background learner writing
+`let x = 1` gets the drop-the-`let` correction, not a what-is-a-variable lecture).
 
 **Done when:** mid-exercise "why is this failing?" yields a concept-level hint referencing
 the actual check failure, never a solution; evals pass; hints-used shows in progress data.

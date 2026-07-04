@@ -6,6 +6,23 @@ code + reading real library code** — not concepts. So the curriculum leans har
 *production* (typing code, no copy-paste), *prediction* (what will this print?), and
 *diagnosis* (fix this broken code), and it goes lighter on conceptual exposition.
 
+## Language-contrast callouts (profile-aware)
+
+Lessons don't hardcode "unlike JavaScript…" — they use a **`<LangContrast>` MDX component**
+with variants keyed by background language, and the app shows the variant matching the
+learner's declared profile (ADR-006: "new to programming entirely" vs. "know another
+language" + which one). `js` variants are authored first (the owner's need); other languages
+(`cpp`, `java`, `r`, `matlab`, …) are additive content work for the distribution era — a
+callout with no variant for the learner's language simply doesn't render. Learners marked
+new-to-programming see none of them. The teacher agent gets the same signal from the
+profile and contrasts accordingly in chat for *any* language, since it isn't limited to
+authored variants.
+
+Honest scope note: the v1 curriculum assumes the concepts-solid, syntax-poor persona.
+A true "new to programming" track needs gentler pacing and more conceptual exposition —
+that's a curriculum variant to design at distribution time (with the Phase 7 placement
+quiz), not a checkbox.
+
 ## Exercise kinds (used throughout)
 
 | Kind | What it trains | Notes |
@@ -26,8 +43,9 @@ the whole app is about: never again shipping code you can't explain.
 ### Ch. 0 — Orientation (short)
 How Python runs: REPL vs script vs notebook; `python file.py`; what
 `if __name__ == "__main__":` actually is (a variable you can print!); indentation as syntax;
-comments; the workspace panel. *Explicitly contrasts with JS where useful (no braces, `elif`,
-`None` vs `null`, truthiness differences).*
+comments; the workspace panel. *Heavy `<LangContrast>` use (for `js`: no braces, no `let`,
+`elif`, colons after conditions, `None` vs `null`, truthiness differences — several of
+these observed verbatim in the owner's first real attempt log).*
 
 ### Ch. 1 — Variables, types, strings
 Numbers, strings, f-strings, booleans, `None`; dynamic typing; `type()`; conversion;

@@ -18,11 +18,15 @@ code — corrosive if wrong. Memory must be lightweight and trustworthy.
 Three layers, distinguished by **who writes them**:
 
 ### 1. Declared (written by the learner)
-A `profile` object in `users.settings`: goals/why-learning, background languages, target
-domain (data sci / ML / general), dataset interests, hint-style preference. Seeded by an
-**optional, skippable onboarding survey**; editable anytime in settings. Injected verbatim
-into teacher context. Powers goal-aware teaching ("since you're headed for pandas, here's
-the same idea with a DataFrame") and reward-break personalization.
+A `profile` object in `users.settings`: goals/why-learning, **programming background
+("new to programming" vs. experienced + primary language)**, target domain (data sci / ML /
+general), dataset interests, hint-style preference. Seeded by an **optional, skippable
+onboarding survey**; editable anytime in settings. Injected verbatim into teacher context.
+Powers goal-aware teaching ("since you're headed for pandas, here's the same idea with a
+DataFrame"), reward-break personalization, and **language-contrast rendering**: lesson
+`<LangContrast>` callouts show the variant for the learner's declared language (see
+CURRICULUM "Language-contrast callouts"), and the teacher contrasts with that language in
+chat ("you know exactly what you're doing — drop the `let`").
 
 ### 2. Derived (computed, never stored as prose, never model-written)
 Aggregations over the append-only `attempts` log joined with **exercise concept tags**:
