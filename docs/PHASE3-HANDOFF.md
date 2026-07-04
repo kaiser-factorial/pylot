@@ -6,21 +6,15 @@ Phase 3 building agent. Governing docs, in order: ROADMAP Phase 3 →
 [ADR-005](adr/ADR-005-teacher-agent.md) (the teacher you are extending) →
 CURRICULUM.md (you are authoring Ch. 2–6; every content note in CLAUDE.md applies).
 
-## 0. Phase 2 close-out state — READ THIS FIRST
+## 0. Phase 2 close-out state — CLOSED ✅ (2026-07-04)
 
-Phase 2 is **built and offline-verified but not yet signed off**. The owner chose to
-add her API key later. Before Phase 3 starts, these must happen (owner-side):
-
-1. `ANTHROPIC_API_KEY` pasted into `.env.local` (placeholder line exists).
-2. `npm run eval:teacher` passes (12 cases; ~24 calls, well under $0.50).
-3. `npm run verify:phase2` exits 0 (it exits 2/INCOMPLETE without the key — the
-   offline 14 checks all passed on 2026-07-04).
-4. One-line backfill of the new `authored_hints_revealed` column on the owner's real
-   DB (see §4 — an automated agent was correctly blocked from writing her real DB).
-5. Owner playtest: talk to the teacher mid-exercise, try to trick it, complete the survey.
-
-If any eval case fails, fix `lib/teacher/prompt.ts` (and ONLY re-ship after the eval
-passes — invariant #1; prompt edits are production changes).
+All close-out items done same-day: key in `.env.local`, `npm run eval:teacher` (12
+cases) and `npm run verify:phase2` both pass live, the `authored_hints_revealed`
+backfill ran on the owner's real DB (verified: zero mismatches), and the owner
+playtested and signed off. Standing rule you inherit: any edit to
+`lib/teacher/prompt.ts` must re-pass BOTH commands before it lands (invariant #1;
+prompt edits are production changes). One playtest item was explicitly deferred to
+you — see the owner bookmark in §2 (refusal-under-pressure on complex exercises).
 
 ## 1. What Phase 2 built (all offline checks green)
 
