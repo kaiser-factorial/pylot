@@ -8,7 +8,18 @@ Built to cure a specific ailment: knowing what you want conceptually, having AI 
 code, and never truly understanding it. Pylot makes you type, predict, fix, and explain code
 — with AI as a tutor instead of a ghostwriter.
 
-**Status:** architecture/documentation phase. No application code yet.
+**Status:** Phase 0 (skeleton) complete — see [docs/ROADMAP.md](docs/ROADMAP.md).
+
+## Development
+
+```bash
+npm install          # also copies the Pyodide runtime into public/pyodide/
+npm run db:push      # create/update the SQLite schema (data/pylot.db)
+npm run db:seed      # create the local user
+npm run dev          # http://localhost:3000/dev/runner is the Phase 0 dev loop
+npm run validate:content   # schema + reference-solution checks for content/
+npm run verify:phase0      # browser acceptance suite (needs dev server running)
+```
 
 ## Documentation map
 

@@ -13,3 +13,18 @@ dist/
 # Env & secrets
 .env
 .env.*
+
+# Next.js / Node (merged from create-next-app)
+/node_modules
+/.next/
+/out/
+/build
+/coverage
+*.pem
+npm-debug.log*
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+# Pyodide assets copied from node_modules by scripts/copy-pyodide.mjs
+/public/pyodide/

@@ -1,0 +1,7 @@
+# Chapter and lesson ordering. Lessons unlock in order (Phase 1 enforces).
+chapters:
+  - id: py-basics
+    title: "Ch. 0 — Orientation"
+    dir: py-basics
+    lessons:
+      - 00-hello

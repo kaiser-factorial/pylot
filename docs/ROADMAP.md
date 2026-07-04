@@ -19,7 +19,7 @@ Do not start phase N+1 with phase N's acceptance criteria unmet.
 | Remote runner vendor confirmation | Phase 5 | opbdh is the leading candidate; confirmed by the spike |
 | Auth provider + hosted DB | Phase 6 | Only if distribution actually happens |
 
-## Phase 0 — Skeleton
+## Phase 0 — Skeleton ✅ (completed 2026-07-03; acceptance automated in `npm run verify:phase0`)
 Scaffold Next.js (App Router, TS, Tailwind, shadcn/ui). Drizzle + SQLite with the full schema
 from ARCHITECTURE §4.6 (seeded single user). Zod content schema + `validate:content` script
 (validates schema AND runs each reference solution against its own checks in Pyodide via a

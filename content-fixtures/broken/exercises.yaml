@@ -1,0 +1,13 @@
+# Deliberately broken content used to prove validate:content FAILS when a
+# reference solution cannot pass its own checks. Not part of the curriculum.
+exercises:
+  - id: fixtures/broken/01-wrong-reference
+    title: Broken on purpose
+    kind: write-code
+    difficulty: 1
+    prompt: This reference solution does not satisfy its own check.
+    reference_solution: |
+      ans = 14
+    checks:
+      - type: state
+        expr: "ans == 15"

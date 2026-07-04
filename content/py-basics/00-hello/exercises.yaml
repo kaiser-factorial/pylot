@@ -1,0 +1,37 @@
+exercises:
+  - id: py-basics/00-hello/01-multiply
+    title: First computation
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Multiply 3 by 5 and store the result in a variable named `ans`.
+      (Yes — this is MATLAB Onramp's Task 1, in its new home.)
+    starter_code: |
+      # your code here
+    reference_solution: |
+      ans = 3 * 5
+    checks:
+      - type: state
+        expr: "ans == 15"
+        message: "ans should hold 3 times 5"
+    hints:
+      - "Assignment looks like: name = expression"
+
+  - id: py-basics/00-hello/02-hello-print
+    title: Say it out loud
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Print exactly `Hello, Pylot!` using the print() function.
+    starter_code: |
+      # your code here
+    reference_solution: |
+      print("Hello, Pylot!")
+    checks:
+      - type: stdout
+        equals: "Hello, Pylot!"
+      - type: ast
+        requires: [Call]
+        message: "use the print() function"
+    hints:
+      - "Strings can use single or double quotes."
