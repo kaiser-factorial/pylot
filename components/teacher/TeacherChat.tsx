@@ -128,7 +128,11 @@ export function TeacherChat({ exerciseId, exerciseTitle, code, seed }: TeacherCh
   }
 
   return (
-    <div className="readable flex h-full min-h-0 flex-col" data-testid="teacher-chat">
+    <div
+      className="readable flex h-full min-h-0 flex-col"
+      data-testid="teacher-chat"
+      data-streaming={streaming ? 'true' : 'false'}
+    >
       <div
         ref={scrollRef}
         className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3"

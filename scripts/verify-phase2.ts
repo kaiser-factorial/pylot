@@ -31,11 +31,15 @@ const check = (name: string, ok: boolean, extra = '') => {
   if (!ok) failures++
 }
 
-// load .env.local so the live section sees the key the way next dev does
+// load .env.local so the live section sees the key the way next dev does —
+// including dotenv's quote-stripping (a quoted value would override the
+// server's own .env loading with the quotes still on, and the API 401s)
 if (!process.env.ANTHROPIC_API_KEY && existsSync('.env.local')) {
   for (const line of readFileSync('.env.local', 'utf8').split('\n')) {
     const m = line.match(/^([A-Z_]+)=(.*)$/)
-    if (m && !process.env[m[1]] && m[2] !== '') process.env[m[1]] = m[2]
+    if (!m || process.env[m[1]]) continue
+    const value = m[2].trim().replace(/^(['"])(.*)\1$/, '$2')
+    if (value !== '') process.env[m[1]] = value
   }
 }
 const HAS_KEY = Boolean(process.env.ANTHROPIC_API_KEY)
@@ -82,8 +86,14 @@ async function main() {
     env: { ...process.env, PYLOT_DB_PATH: scratchDb, PYLOT_DIST_DIR: '.next-verify' },
     stdio: 'pipe',
   })
-  server.stdout.on('data', () => {})
-  server.stderr.on('data', () => {})
+  // keep a rolling tail of server output for post-mortems on failures
+  const serverLog: string[] = []
+  const capture = (buf: Buffer) => {
+    serverLog.push(...buf.toString().split('\n'))
+    if (serverLog.length > 200) serverLog.splice(0, serverLog.length - 200)
+  }
+  server.stdout.on('data', capture)
+  server.stderr.on('data', capture)
 
   let browser: Browser | null = null
   try {
@@ -148,6 +158,14 @@ async function main() {
 
     await page.getByTestId('ask-teacher').click()
     await page.getByTestId('teacher-chat').waitFor({ state: 'visible' })
+    // the seed lands via a client effect — wait for it instead of racing it
+    await page
+      .waitForFunction(
+        () => ((document.querySelector('[data-testid="teacher-input"]') as HTMLTextAreaElement)?.value ?? '') !== '',
+        undefined,
+        { timeout: 10_000 }
+      )
+      .catch(() => {})
     const seeded = await page.getByTestId('teacher-input').inputValue()
     check('teacher tab opens pre-seeded with the actual failure', /failed this check/.test(seeded) && /state:/.test(seeded), seeded.slice(0, 60))
 
@@ -185,20 +203,42 @@ async function main() {
       skippedLive = true
       console.log('  ⚠ SKIPPED — no ANTHROPIC_API_KEY; run again with the key in .env.local')
     } else {
+      // capture what actually comes back from /api/teacher in the browser
+      const teacherResponses: string[] = []
+      page.on('response', (res) => {
+        if (res.url().includes('/api/teacher')) {
+          teacherResponses.push(`${res.request().method()} ${res.status()}`)
+        }
+      })
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') teacherResponses.push(`console.error: ${msg.text().slice(0, 200)}`)
+      })
       await page.getByTestId('right-tab-teacher').click()
       await page.getByTestId('teacher-send').click()
+      try {
+        await page.waitForFunction(
+          () => {
+            const msgs = document.querySelectorAll('[data-testid="teacher-msg-assistant"]')
+            const last = msgs[msgs.length - 1]
+            return Boolean(last && (last.textContent ?? '').length > 20)
+          },
+          undefined,
+          { timeout: 120_000 }
+        )
+      } catch (e) {
+        const notice = await page.getByTestId('teacher-notice').textContent().catch(() => null)
+        console.log('  ✗ no streamed reply within 120s — diagnostics:')
+        console.log(`    ui notice: ${notice ?? '(none)'}`)
+        console.log(`    /api/teacher responses seen: ${teacherResponses.join(' | ') || '(none)'}`)
+        console.log('    server log tail:')
+        for (const l of serverLog.slice(-25)) if (l.trim()) console.log(`      ${l}`)
+        throw e
+      }
+      // wait for the stream to settle (component reports via data-streaming;
+      // the send button is no signal — it stays disabled while input is empty)
       await page.waitForFunction(
-        () => {
-          const msgs = document.querySelectorAll('[data-testid="teacher-msg-assistant"]')
-          const last = msgs[msgs.length - 1]
-          return Boolean(last && (last.textContent ?? '').length > 20)
-        },
-        undefined,
-        { timeout: 120_000 }
-      )
-      // wait for the stream to settle (send button re-enables)
-      await page.waitForFunction(
-        () => !(document.querySelector('[data-testid="teacher-send"]') as HTMLButtonElement)?.disabled,
+        () =>
+          document.querySelector('[data-testid="teacher-chat"]')?.getAttribute('data-streaming') === 'false',
         undefined,
         { timeout: 120_000 }
       )

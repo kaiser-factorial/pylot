@@ -29,7 +29,10 @@ const USER_ID = 'local-user'
 if (!process.env.ANTHROPIC_API_KEY && existsSync('.env.local')) {
   for (const line of readFileSync('.env.local', 'utf8').split('\n')) {
     const m = line.match(/^([A-Z_]+)=(.*)$/)
-    if (m && !process.env[m[1]] && m[2] !== '') process.env[m[1]] = m[2]
+    if (!m || process.env[m[1]]) continue
+    // dotenv-style quote stripping — a quoted value passed through raw 401s
+    const value = m[2].trim().replace(/^(['"])(.*)\1$/, '$2')
+    if (value !== '') process.env[m[1]] = value
   }
 }
 if (!process.env.ANTHROPIC_API_KEY) {

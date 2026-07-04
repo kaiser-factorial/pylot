@@ -72,7 +72,7 @@ has at least one exercise exercising it; a failing check shows expected-vs-actua
 both themes render the full lesson UI with matching editor syntax highlighting, the toggle
 persists across sessions, and code/prose areas pass the readability rules above.
 
-## Phase 2 — The teacher 🔶 (built 2026-07-04; offline checks green — awaiting owner: API key into `.env.local`, `npm run eval:teacher` + `npm run verify:phase2` passing with the key, the `authored_hints_revealed` backfill, and a personal playtest. See `docs/PHASE3-HANDOFF.md` §0 for the exact close-out list.)
+## Phase 2 — The teacher 🔶 (built 2026-07-04; `npm run eval:teacher` ✅ and `npm run verify:phase2` ✅ pass with the live key — remaining before ✅: the owner's `authored_hints_revealed` backfill one-liner and her personal playtest. See `docs/PHASE3-HANDOFF.md` §0.)
 `/api/teacher` per ADR-005: server-side context assembly (lesson, code, check report, recent
 attempts, hint history), streaming chat UI in the right pane, hint-ladder system prompt,
 authored-hints-first policy, per-(user, exercise) chat persistence, hint-depth tracking.
