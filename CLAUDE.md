@@ -36,6 +36,22 @@ and the checks, not by reading the code.
   where the curriculum notes them.
 - Difficulty tags (1–5) matter: they normalize struggle scores for reward triggers.
 
+## Build notes (learned in Phase 0 — save yourself the debugging)
+- **Verify by driving a real browser.** Playwright is installed; follow the
+  `scripts/verify-phase0.ts` pattern for each phase's acceptance criteria. The Claude
+  Chrome extension cannot open localhost (org policy) — use Playwright headless.
+- **Check computed styles, not just textContent.** Phase 0 shipped black-on-black stdout
+  that every content assertion passed. Assert color != backgroundColor on output surfaces.
+- **Pyodide must load in a MODULE worker** (`new Worker(url, { type: 'module' })` +
+  `import('/pyodide/pyodide.mjs')`). Its loader stalls silently in classic workers.
+- Worker init errors must reject the ready promise — never leave the UI stuck on "booting".
+- npm blocks native install scripts; approvals live in package.json `allowScripts`
+  (`npm approve-scripts <pkg>` for new native deps).
+- Pyodide is pinned (314.0.2) and served from `public/pyodide/` (copied by postinstall);
+  the Node validator and browser worker must always share one version.
+- The owner's real early attempts (ids 9–15 in `data/pylot.db`) are JS-in-Python errors —
+  authentic material for Ch. 0–1 fix-bug exercises and LangContrast callouts.
+
 ## Stack facts
 Next.js App Router + TypeScript, Tailwind + shadcn/ui, CodeMirror 6, Drizzle + SQLite
 (`data/pylot.db`, gitignored), Pyodide in a Web Worker, AI SDK with a `"provider/model"`
