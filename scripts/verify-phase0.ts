@@ -43,6 +43,12 @@ async function main() {
     { timeout: 30_000 }
   )
   check('stdout renders', true)
+  const visible = await page.evaluate(() => {
+    const el = document.querySelector('[data-testid="console-output"]')!
+    const s = getComputedStyle(el)
+    return s.color !== s.backgroundColor
+  })
+  check('console text color differs from its background', visible)
   const rows = await page.getByTestId('workspace-table').locator('tbody tr').allTextContents()
   check('workspace shows x:int = 15', rows.some((r) => r.includes('x') && r.includes('int') && r.includes('15')))
   check('workspace shows words:list', rows.some((r) => r.includes('words') && r.includes('list')))

@@ -81,7 +81,7 @@ export default function DevRunnerPage() {
             <h2 className="mb-1 text-neutral-400">console</h2>
             <pre
               data-testid="console-output"
-              className="min-h-16 whitespace-pre-wrap rounded border border-neutral-800 bg-neutral-950 p-3"
+              className="min-h-16 whitespace-pre-wrap rounded border border-neutral-800 bg-neutral-950 p-3 text-neutral-100"
             >
               {result?.stdout}
               {result?.stderr && <span className="text-yellow-500">{result.stderr}</span>}
