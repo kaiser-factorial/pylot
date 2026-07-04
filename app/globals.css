@@ -219,6 +219,16 @@
   ::selection {
     background: var(--editor-selection);
   }
+  /* Tailwind v4 preflight resets buttons to cursor:default — anything
+     clickable should say so on hover */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
 
 /* ------------------------------------------------------------ utilities --- */
