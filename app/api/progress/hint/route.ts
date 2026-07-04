@@ -11,6 +11,6 @@ export async function POST(req: NextRequest) {
   if (typeof exerciseId !== 'string') {
     return NextResponse.json({ error: 'exerciseId required' }, { status: 400 })
   }
-  const hintsUsed = await recordHintUsed(user.id, exerciseId)
+  const hintsUsed = await recordHintUsed(user.id, exerciseId, { authored: true })
   return NextResponse.json({ hintsUsed })
 }

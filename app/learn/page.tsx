@@ -41,10 +41,39 @@ export default async function LearnPage() {
           <span className="text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
             fly the plane yourself
           </span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-3">
+            <Link
+              href="/settings"
+              data-testid="settings-link"
+              className="text-[11px] lowercase tracking-[0.15em] hover:opacity-80"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              settings ⚙
+            </Link>
             <ThemeToggle initial={settings.theme} />
           </div>
         </header>
+
+        {/* onboarding survey prompt (optional + skippable — ADR-006 layer 1) */}
+        {!settings.profile.surveyDone && (
+          <Link
+            href="/settings?survey=1"
+            data-testid="survey-prompt"
+            className="btn-anim mb-6 block px-4 py-3"
+            style={{
+              border: '1px dashed var(--pane-border-strong)',
+              background: 'color-mix(in srgb, var(--status-info) 5%, transparent)',
+            }}
+          >
+            <span className="text-[12px]" style={{ color: 'var(--prose-fg)' }}>
+              <span className="font-bold" style={{ color: 'var(--status-info)' }}>
+                new:
+              </span>{' '}
+              tell the teacher about yourself — 5 optional questions so hints and examples fit
+              you ▸
+            </span>
+          </Link>
+        )}
 
         {resume && (
           <Link

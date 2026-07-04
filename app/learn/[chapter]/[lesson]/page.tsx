@@ -40,6 +40,7 @@ export default async function LessonPage({
       exercise: toClientExercise(ex),
       status: p?.status ?? 'available',
       hintsUsed: p?.hintsUsed ?? 0,
+      authoredHintsRevealed: p?.authoredHintsRevealed ?? 0,
     }
   })
 

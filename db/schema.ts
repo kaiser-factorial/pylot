@@ -34,7 +34,13 @@ export const progress = sqliteTable('progress', {
   status: text('status', { enum: ['locked', 'available', 'passed'] }).notNull().default('available'),
   passedAt: integer('passed_at', { mode: 'timestamp_ms' }),
   attemptsCount: integer('attempts_count').notNull().default(0),
+  // total hint consumption — authored reveals AND teacher-delivered hints,
+  // one honest number (feeds struggle scores)
   hintsUsed: integer('hints_used').notNull().default(0),
+  // how many AUTHORED hints have actually been shown — the UI reconstructs
+  // the revealed-hints list from this, so teacher-improvised hints must not
+  // inflate it (they only bump hintsUsed)
+  authoredHintsRevealed: integer('authored_hints_revealed').notNull().default(0),
 })
 
 export const chatMessages = sqliteTable('chat_messages', {
@@ -43,6 +49,20 @@ export const chatMessages = sqliteTable('chat_messages', {
   exerciseId: text('exercise_id').notNull(),
   role: text('role', { enum: ['user', 'assistant'] }).notNull(),
   content: text('content').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
+})
+
+// One row per AI call — the ledger behind the hard monthly spend cap on the
+// teacher endpoint (ROADMAP open decision, resolved 2026-07-04: $10/month).
+// Append-only by convention; the cap is computed by summing the current month.
+export const aiUsage = sqliteTable('ai_usage', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
+  kind: text('kind').notNull().default('teacher'),
+  model: text('model').notNull(),
+  inputTokens: integer('input_tokens').notNull().default(0),
+  outputTokens: integer('output_tokens').notNull().default(0),
+  costUsd: real('cost_usd').notNull().default(0),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
 })
 

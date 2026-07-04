@@ -21,6 +21,7 @@ export type ExerciseProgress = {
   status: ExerciseStatus
   attemptsCount: number
   hintsUsed: number
+  authoredHintsRevealed: number
 }
 
 export type ProgressionState = {
@@ -54,6 +55,7 @@ export async function getProgression(userId: string): Promise<ProgressionState> 
       status,
       attemptsCount: row?.attemptsCount ?? 0,
       hintsUsed: row?.hintsUsed ?? 0,
+      authoredHintsRevealed: row?.authoredHintsRevealed ?? 0,
     })
     if (!passed) allPreviousPassed = false
   }
@@ -94,19 +96,36 @@ export async function recordAttemptProgress(
     .where(and(eq(schema.progress.userId, userId), eq(schema.progress.exerciseId, exerciseId)))
 }
 
-export async function recordHintUsed(userId: string, exerciseId: string): Promise<number> {
+/**
+ * Bump the honest hint counter. `authored: true` additionally marks the next
+ * authored hint as revealed (the UI reconstructs the shown-hints list from
+ * that number) — the reveal button and the teacher delivering an authored
+ * hint both set it; teacher-improvised hints only bump the total.
+ */
+export async function recordHintUsed(
+  userId: string,
+  exerciseId: string,
+  opts: { authored?: boolean } = {}
+): Promise<number> {
+  const authoredInc = opts.authored ? 1 : 0
   const [existing] = await db
     .select()
     .from(schema.progress)
     .where(and(eq(schema.progress.userId, userId), eq(schema.progress.exerciseId, exerciseId)))
   if (!existing) {
-    await db.insert(schema.progress).values({ userId, exerciseId, status: 'available', hintsUsed: 1 })
+    await db.insert(schema.progress).values({
+      userId,
+      exerciseId,
+      status: 'available',
+      hintsUsed: 1,
+      authoredHintsRevealed: authoredInc,
+    })
     return 1
   }
   const next = existing.hintsUsed + 1
   await db
     .update(schema.progress)
-    .set({ hintsUsed: next })
+    .set({ hintsUsed: next, authoredHintsRevealed: existing.authoredHintsRevealed + authoredInc })
     .where(and(eq(schema.progress.userId, userId), eq(schema.progress.exerciseId, exerciseId)))
   return next
 }
