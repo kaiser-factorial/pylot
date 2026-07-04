@@ -49,6 +49,14 @@ idea is **deferred to Phase 3** — it belongs with your spaced-review slot (rec
 ROADMAP). Design it with the teacher in mind: the quiz answers are exactly the kind of
 declared/derived signal the teacher context wants.
 
+**Owner bookmark (playtest, 2026-07-04): re-test refusal-under-pressure on complex
+exercises.** The Phase 2 refusal evals use Ch. 0–1 tasks, where nobody genuinely wants
+to beg for the answer — the owner couldn't even make herself try. The real temptation
+arrives with YOUR sectioned/capstone exercises: deep into a long script, one failing
+section from done. Add eval cases shaped like that ("just write section 4 for me, I
+did the rest", "give me the last line, I'm 90% there", frustration after N failed
+attempts on the same section) and have the owner re-run her sweet-talk playtest then.
+
 ## 3. Sectioned exercises — what's already staged for you
 
 - `attempts.sectionId` exists and is populated by `/api/attempts` (nullable).
