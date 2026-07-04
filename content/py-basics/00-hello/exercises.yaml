@@ -6,6 +6,7 @@ exercises:
     prompt: |
       Multiply 3 by 5 and store the result in a variable named `ans`.
       (Yes — this is MATLAB Onramp's Task 1, in its new home.)
+    concepts: [variables, numbers]
     starter_code: |
       # your code here
     reference_solution: |
@@ -23,6 +24,7 @@ exercises:
     difficulty: 1
     prompt: |
       Print exactly `Hello, Pylot!` using the print() function.
+    concepts: [printing, strings, functions-calling]
     starter_code: |
       # your code here
     reference_solution: |

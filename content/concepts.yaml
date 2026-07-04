@@ -1,0 +1,12 @@
+# Controlled vocabulary for exercise `concepts` tags (ADR-006).
+# Every exercise must carry ≥1 of these; validate:content rejects unknown tags.
+# Grow this list deliberately — it is the axis for struggle analytics and,
+# later, adaptive difficulty. Library chapters will add namespaced tags
+# (e.g. pandas/groupby) in Phase 4.
+concepts:
+  - execution-model     # top-to-bottom flow, scripts vs REPL, __main__
+  - variables           # assignment, rebinding, dynamic typing
+  - numbers             # arithmetic, int/float, operators
+  - strings             # literals, f-strings, methods
+  - printing            # print(), console output
+  - functions-calling   # calling built-ins/functions, arguments

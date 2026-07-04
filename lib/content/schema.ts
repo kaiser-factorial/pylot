@@ -91,6 +91,9 @@ export const exercise = z.object({
   difficulty: z.number().int().min(1).max(5),
   runtime: z.enum(['browser', 'remote']).default('browser'),
   prompt: z.string(),
+  // ≥1 tag from content/concepts.yaml (ADR-006) — the axis for struggle
+  // analytics and adaptive difficulty; validator enforces vocabulary membership
+  concepts: z.array(z.string()).min(1),
   starter_code: z.string().default(''),
   // never shown to the learner; validated against `checks` by validate:content
   reference_solution: z.string().optional(),

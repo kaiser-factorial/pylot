@@ -76,6 +76,11 @@ authored-hints-first policy, per-(user, exercise) chat persistence, hint-depth t
 Prompt eval set (≥10 cases: wrong code + question → expected behavior, incl. "refuses to
 just give the solution").
 
+**Learner profile (ADR-006 layer 1):** optional skippable onboarding survey (why learning,
+background, target domain, dataset interests, hint-style preference) → `users.settings.profile`,
+editable in a settings view, injected into teacher context. Add an eval case showing
+goal-aware teaching (datasci-profile learner gets a datasci-flavored example).
+
 **Done when:** mid-exercise "why is this failing?" yields a concept-level hint referencing
 the actual check failure, never a solution; evals pass; hints-used shows in progress data.
 
@@ -85,6 +90,12 @@ diagnosis). Parsons + capstone (ai_rubric) exercise kinds. Author **Ch. 2–6 in
 Struggle score computation on the attempts log. Reward system: chapter-completion +
 high-struggle triggers, offer UX, sandboxed-iframe toy rendering, `reward_events` persistence.
 Spaced quick-review at chapter openings.
+
+**Learner memory layers 2–3 (ADR-006):** derived struggle-by-concept summary
+(`lib/memory/derived.ts` over attempts × concept tags) added to teacher context — enables
+"slicing is your most frequent stumble, want more examples?" grounded in real counts.
+Optional scope: episodic teacher notes with the transparency rules (user-visible/deletable
+panel, capped, no performance claims — those must cite derived numbers).
 
 **Done when:** a capstone reports per-section pass/fail and the teacher pinpoints the failing
 section; reward fires after a struggle-heavy pass and does NOT fire after an easy one

@@ -145,6 +145,10 @@ per-section pass/fail rather than one opaque failure.
   current code, the last check report, the last N attempts for this exercise (to see what
   they've already tried), and chapter-level progress. The model never has to ask "what are
   you working on."
+- **Learner memory** (ADR-006, phased in): the declared profile (goals/background from the
+  optional onboarding survey), a derived struggle-by-concept summary computed from the
+  attempts log × exercise concept tags (never model-written), and capped, user-visible
+  episodic notes. Rule: performance claims must cite derived numbers, not impressions.
 - **Hint ladder policy** in the system prompt: (1) point at the relevant concept, (2) point at
   the offending line/section, (3) give the shape of the fix — never paste a full solution for
   an unpassed exercise. After a pass, it may show idiomatic alternatives and explain them.

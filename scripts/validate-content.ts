@@ -56,6 +56,13 @@ async function main() {
     console.log(`(no curriculum.yaml under ${root} — validating exercise files only)`)
   }
 
+  // controlled concept vocabulary (ADR-006); fixtures roots may not have one
+  const conceptsPath = join(root, 'concepts.yaml')
+  const vocabulary: Set<string> | null = existsSync(conceptsPath)
+    ? new Set((parse(readFileSync(conceptsPath, 'utf8')) as { concepts: string[] }).concepts)
+    : null
+  if (!vocabulary) console.log(`(no concepts.yaml under ${root} — skipping vocabulary check)`)
+
   const files = collectExerciseFiles(root)
   if (files.length === 0) fail(`no exercises.yaml files found under ${root}`)
 
@@ -70,6 +77,11 @@ async function main() {
     for (const ex of parsed.data.exercises) {
       if (seenIds.has(ex.id)) fail(`${file}: duplicate exercise id ${ex.id}`)
       seenIds.add(ex.id)
+      if (vocabulary) {
+        for (const c of ex.concepts) {
+          if (!vocabulary.has(c)) fail(`${ex.id}: unknown concept tag "${c}" — add it to content/concepts.yaml or fix the typo`)
+        }
+      }
       all.push({ file, ex })
     }
   }

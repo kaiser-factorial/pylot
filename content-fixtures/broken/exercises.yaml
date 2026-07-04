@@ -6,6 +6,7 @@ exercises:
     kind: write-code
     difficulty: 1
     prompt: This reference solution does not satisfy its own check.
+    concepts: [variables]
     reference_solution: |
       ans = 14
     checks:
