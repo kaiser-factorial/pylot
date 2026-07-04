@@ -98,6 +98,7 @@
   --pane-border-w: 1px;
   --pane-title: #10ff50;
   --pane-header-bg: rgba(16, 255, 80, 0.07);
+  --briefing-bg: color-mix(in srgb, #e63946 12%, transparent);
   --pane-shadow: none;
   --pane-clip: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 
@@ -174,6 +175,7 @@
   --pane-border-w: 3px;
   --pane-title: #111111;
   --pane-header-bg: #ffd600;
+  --briefing-bg: color-mix(in srgb, #eb1a26 10%, #ffffff);
   --pane-shadow: 6px 6px 0px #111111;
   --pane-clip: none;
 
@@ -380,10 +382,34 @@
   border: var(--pane-border-w) solid var(--pane-border-strong);
   box-shadow: var(--pane-shadow);
 }
+/* Cyber hover = the CyberButton treatment: solid fill, text flips dark,
+   striped texture (the owner's theme's signature button state). */
 [data-theme="cyber"] .wb-btn-primary:hover:not(:disabled) {
   filter: none;
-  background: color-mix(in srgb, var(--primary) 72%, white);
+  color: #0a0405;
+  background-color: color-mix(in srgb, var(--primary) 85%, white);
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.16) 3px,
+    rgba(0, 0, 0, 0.16) 5px
+  );
   box-shadow: 0 0 10px color-mix(in srgb, var(--primary) 55%, transparent);
+}
+[data-theme="cyber"] .wb-btn-ghost:hover:not(:disabled) {
+  filter: none;
+  color: #050a08;
+  border-color: var(--pane-title);
+  background-color: var(--pane-title);
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.18) 3px,
+    rgba(0, 0, 0, 0.18) 5px
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--pane-title) 40%, transparent);
 }
 [data-theme="primary"] .wb-btn-primary:hover:not(:disabled) {
   filter: none;
