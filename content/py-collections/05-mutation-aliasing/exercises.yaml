@@ -1,0 +1,121 @@
+exercises:
+  - id: py-collections/05-mutation-aliasing/01-predict-alias
+    title: "Predict: the shared list"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      `b = a` does not copy — it makes a second label for the same list.
+      Track what each name points at as the code runs, then predict both
+      printed lines.
+    concepts: [mutation, lists]
+    starter_code: |
+      a = [10, 20, 30]
+      b = a
+      b.append(40)
+      print(a)
+      print(a is b)
+    reference_solution: |
+      a = [10, 20, 30]
+      b = a
+      b.append(40)
+      print(a)
+      print(a is b)
+    checks:
+      - type: stdout
+        equals: |
+          [10, 20, 30, 40]
+          True
+    hints:
+      - "b = a means a and b are the same list — appending through b is visible through a."
+      - "`a is b` asks 'same object?' — and they are."
+
+  - id: py-collections/05-mutation-aliasing/02-predict-rebind
+    title: "Predict: rebinding breaks the link"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      This time `b` is REBOUND to a new list, not mutated. Rebinding only
+      moves `b`'s label — `a` can't be affected. Predict both lines.
+    concepts: [mutation, variables]
+    starter_code: |
+      a = [10, 20, 30]
+      b = a
+      b = [99]
+      print(a)
+      print(b)
+    reference_solution: |
+      a = [10, 20, 30]
+      b = a
+      b = [99]
+      print(a)
+      print(b)
+    checks:
+      - type: stdout
+        equals: |
+          [10, 20, 30]
+          [99]
+    hints:
+      - "b = [99] points b at a fresh list; it does not touch the list a still holds."
+      - "Contrast with .append, which would have mutated the shared list."
+
+  - id: py-collections/05-mutation-aliasing/03-fix-copy
+    title: "Fix: the backup that wasn't"
+    kind: fix-bug
+    difficulty: 4
+    prompt: |
+      `backup` is supposed to preserve the ORIGINAL two-item list before we
+      add to the working copy. But `backup = checklist` aliases it, so the
+      append hits both. Make a real copy so `backup` stays `["preflight",
+      "taxi"]` while `checklist` grows. Output: `['preflight', 'taxi']` then
+      `['preflight', 'taxi', 'takeoff']`.
+    concepts: [mutation, lists, slicing]
+    starter_code: |
+      checklist = ["preflight", "taxi"]
+      backup = checklist
+      checklist.append("takeoff")
+      print(backup)
+      print(checklist)
+    reference_solution: |
+      checklist = ["preflight", "taxi"]
+      backup = checklist.copy()
+      checklist.append("takeoff")
+      print(backup)
+      print(checklist)
+    checks:
+      - type: stdout
+        equals: |
+          ['preflight', 'taxi']
+          ['preflight', 'taxi', 'takeoff']
+      - type: state
+        expr: 'backup == ["preflight", "taxi"] and checklist == ["preflight", "taxi", "takeoff"]'
+    hints:
+      - "backup = checklist makes an alias, not a copy — both names see the append."
+      - "Ask for an independent copy: checklist.copy() (or checklist[:])."
+
+  - id: py-collections/05-mutation-aliasing/04-safe-extend
+    title: The independent copy
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Given `base`, make `extended` — an independent copy of `base` with
+      `"emergency"` appended — WITHOUT changing `base`. Print `base` then
+      `extended`. `base` must still be its original three items.
+    concepts: [mutation, lists, slicing]
+    starter_code: |
+      base = ["fuel", "hydraulics", "comms"]
+      # extended = ...
+    reference_solution: |
+      base = ["fuel", "hydraulics", "comms"]
+      extended = base.copy()
+      extended.append("emergency")
+      print(base)
+      print(extended)
+    checks:
+      - type: state
+        expr: 'base == ["fuel", "hydraulics", "comms"]'
+        message: "base must not change — copy first, then append to the copy"
+      - type: state
+        expr: 'extended == ["fuel", "hydraulics", "comms", "emergency"]'
+    hints:
+      - "Copy base first (.copy() or [:]), then append to the copy only."
+      - "If base changed, you appended to an alias instead of a copy."

@@ -1,0 +1,120 @@
+exercises:
+  - id: py-functions/04-lambdas-docstrings/01-sort-key
+    title: Sort by the right field
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      `flights` is a list of `(code, minutes_late)` tuples. Build `by_delay`:
+      the same list sorted ascending by minutes late, using `sorted` with a
+      `key=lambda`. Print it. Expected:
+      `[('BA2', 3), ('AA1', 12), ('CX4', 40)]`.
+    concepts: [lambdas, function-args]
+    starter_code: |
+      flights = [("AA1", 12), ("BA2", 3), ("CX4", 40)]
+      # by_delay = sorted(flights, key=...)
+    reference_solution: |
+      flights = [("AA1", 12), ("BA2", 3), ("CX4", 40)]
+      by_delay = sorted(flights, key=lambda f: f[1])
+      print(by_delay)
+    checks:
+      - type: state
+        expr: "by_delay == [('BA2', 3), ('AA1', 12), ('CX4', 40)]"
+      - type: ast
+        requires: [Lambda]
+        message: "sort with key=lambda f: f[1]"
+    hints:
+      - "sorted(flights, key=lambda f: f[1]) compares by the second tuple item."
+      - "The lambda receives one flight tuple and returns its minutes-late field."
+
+  - id: py-functions/04-lambdas-docstrings/02-predict-key
+    title: "Predict: max by a key"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      `max` with a `key` returns the ITEM whose key is largest — not the key
+      itself. The key here is the word's length. Predict what prints.
+    concepts: [lambdas, function-args]
+    starter_code: |
+      words = ["taxi", "runway", "gate", "terminal"]
+      longest = max(words, key=lambda w: len(w))
+      print(longest)
+      print(len(longest))
+    reference_solution: |
+      words = ["taxi", "runway", "gate", "terminal"]
+      longest = max(words, key=lambda w: len(w))
+      print(longest)
+      print(len(longest))
+    checks:
+      - type: stdout
+        equals: |
+          terminal
+          8
+    hints:
+      - "key=len picks the word with the most letters, and returns that WORD."
+      - "\"terminal\" has 8 letters — the longest of the four."
+
+  - id: py-functions/04-lambdas-docstrings/03-fix-lambda
+    title: "Fix: the wrong tool for the job"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      Two things are wrong here: a lambda's body is a single expression (no
+      `return`), and — more importantly — a lambda is the wrong tool for
+      *transforming every item*. To double each number and sort the results
+      into `[2, 8, 14]`, reach for a comprehension, then sort that. (Lambda's
+      real home is a `key=`, not a whole-list transform.)
+    concepts: [lambdas, comprehensions, errors-reading]
+    starter_code: |
+      nums = [7, 1, 4]
+      doubled = sorted(lambda n: return n * 2, nums)
+      print(doubled)
+    reference_solution: |
+      nums = [7, 1, 4]
+      doubled = sorted([n * 2 for n in nums])
+      print(doubled)
+    checks:
+      - type: stdout
+        equals: "[2, 8, 14]"
+    hints:
+      - "A lambda has no `return` — the expression itself is the value: lambda n: n * 2."
+      - "But here you want to TRANSFORM every number, not sort by a key — a comprehension [n*2 for n in nums] is the clean tool, then sort that."
+
+  - id: py-functions/04-lambdas-docstrings/04-docstring
+    title: Document the function
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Define `fahrenheit(celsius)` that returns `celsius * 9 / 5 + 32`, with
+      a one-sentence docstring as its first line. The starter prints the
+      result and the docstring via `__doc__`. Expected: `98.6` then your
+      docstring text (any sentence that mentions Fahrenheit).
+    concepts: [docstrings, functions-defining]
+    starter_code: |
+      # def fahrenheit(celsius):
+      #     """..."""
+
+      print(fahrenheit(37))
+      print(fahrenheit.__doc__)
+    reference_solution: |
+      def fahrenheit(celsius):
+          """Return the Celsius temperature converted to Fahrenheit."""
+          return celsius * 9 / 5 + 32
+
+      print(fahrenheit(37))
+      print(fahrenheit.__doc__)
+    checks:
+      - type: function
+        name: fahrenheit
+        cases:
+          - args: [37]
+            expected: 98.6
+          - args: [0]
+            expected: 32.0
+          - args: [100]
+            expected: 212.0
+      - type: state
+        expr: "'Fahrenheit' in fahrenheit.__doc__ or 'fahrenheit' in fahrenheit.__doc__"
+        message: "add a docstring (a string on the first line) mentioning Fahrenheit"
+    hints:
+      - "The docstring is a \"\"\"triple-quoted string\"\"\" as the function's first line."
+      - "Then return celsius * 9 / 5 + 32."

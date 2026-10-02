@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
+import { narrationPlugin } from '@/lib/narration/manifest'
 import { CodeBlock } from '@/components/ui/CodeBlock'
 import { LangContrast } from './LangContrast'
 
@@ -21,7 +22,7 @@ export function LessonMdx({ mdx, profileBackground }: { mdx: string; profileBack
   return (
     <MDXRemote
       source={mdx}
-      options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+      options={{ mdxOptions: { remarkPlugins: [remarkGfm, narrationPlugin(profileBackground)] } }}
       components={{
         pre: PreAsCodeBlock,
         LangContrast: (props: { lang: string; children: ReactNode }) => (

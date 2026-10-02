@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { ensureSpeechSchema } from './speech-schema'
 import * as schema from './schema'
 
 // PYLOT_DB_PATH lets verification scripts run against a scratch copy instead
@@ -14,6 +15,8 @@ const dbPath = process.env.PYLOT_DB_PATH ?? join(defaultDir, 'pylot.db')
 const sqlite = new Database(dbPath)
 sqlite.pragma('journal_mode = WAL')
 sqlite.pragma('foreign_keys = ON')
+
+ensureSpeechSchema(sqlite)
 
 export const db = drizzle(sqlite, { schema })
 export { schema }

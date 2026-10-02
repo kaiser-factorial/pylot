@@ -1,0 +1,120 @@
+exercises:
+  - id: py-flow/03-enumerate-zip/01-numbered
+    title: Number the checklist
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Print each checklist step numbered from 1, like `1. preflight`. Use
+      `enumerate` with a start of 1 — don't manage a counter by hand.
+      Output three lines: `1. preflight`, `2. taxi`, `3. takeoff`.
+    concepts: [enumerate-zip, loops-for]
+    starter_code: |
+      steps = ["preflight", "taxi", "takeoff"]
+      # for ... enumerate(steps, 1)
+    reference_solution: |
+      steps = ["preflight", "taxi", "takeoff"]
+      for num, step in enumerate(steps, 1):
+          print(f"{num}. {step}")
+    checks:
+      - type: stdout
+        equals: |
+          1. preflight
+          2. taxi
+          3. takeoff
+      - type: ast
+        requires: [Call]
+        message: "use enumerate(steps, 1) to get the numbering"
+    hints:
+      - "enumerate(steps, 1) yields (1, \"preflight\"), (2, \"taxi\"), ..."
+      - "Unpack both in the loop header: for num, step in enumerate(steps, 1)."
+
+  - id: py-flow/03-enumerate-zip/02-predict-zip
+    title: "Predict: lockstep, and the short stop"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      `zip` pairs items position by position and stops at the SHORTEST
+      input. The second list here is shorter — predict exactly what prints.
+    concepts: [enumerate-zip, loops-for]
+    starter_code: |
+      planes = ["A320", "B737", "E190", "CRJ"]
+      gates = [4, 12, 7]
+      for plane, gate in zip(planes, gates):
+          print(f"{plane} -> gate {gate}")
+    reference_solution: |
+      planes = ["A320", "B737", "E190", "CRJ"]
+      gates = [4, 12, 7]
+      for plane, gate in zip(planes, gates):
+          print(f"{plane} -> gate {gate}")
+    checks:
+      - type: stdout
+        equals: |
+          A320 -> gate 4
+          B737 -> gate 12
+          E190 -> gate 7
+    hints:
+      - "zip stops when the shorter list (gates, 3 items) runs out."
+      - "CRJ has no gate to pair with, so it never prints."
+
+  - id: py-flow/03-enumerate-zip/03-fix-range-len
+    title: "Fix: the index-by-hand loop"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      This works, but it's the clumsy `range(len(...))` pattern this lesson
+      replaces — and it has an off-by-one: it labels the first fuel reading
+      as tank 0. Rewrite it with `enumerate` starting at 1 so it prints
+      `tank 1: 300`, `tank 2: 450`, `tank 3: 120`.
+    concepts: [enumerate-zip, loops-for]
+    starter_code: |
+      levels = [300, 450, 120]
+      for i in range(len(levels)):
+          print(f"tank {i}: {levels[i]}")
+    reference_solution: |
+      levels = [300, 450, 120]
+      for i, level in enumerate(levels, 1):
+          print(f"tank {i}: {level}")
+    checks:
+      - type: stdout
+        equals: |
+          tank 1: 300
+          tank 2: 450
+          tank 3: 120
+      - type: ast
+        forbids: [Subscript]
+        message: "let enumerate give you the value — no levels[i] indexing"
+    hints:
+      - "enumerate(levels, 1) gives you both the number (from 1) and the value."
+      - "With the value unpacked directly, you don't index levels[i] at all."
+
+  - id: py-flow/03-enumerate-zip/04-pair-totals
+    title: Pair and combine
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      Two lists: `outbound` and `return_trip` passenger counts per day.
+      Using `zip`, build a list `daily_totals` where each entry is that
+      day's two counts added together. Print it. Expected:
+      `[210, 265, 180]`.
+    concepts: [enumerate-zip, loops-for]
+    starter_code: |
+      outbound = [120, 140, 95]
+      return_trip = [90, 125, 85]
+      # daily_totals = []
+    reference_solution: |
+      outbound = [120, 140, 95]
+      return_trip = [90, 125, 85]
+      daily_totals = []
+      for out, back in zip(outbound, return_trip):
+          daily_totals.append(out + back)
+      print(daily_totals)
+    checks:
+      - type: state
+        expr: "daily_totals == [210, 265, 180]"
+      - type: stdout
+        equals: "[210, 265, 180]"
+      - type: ast
+        requires: [For]
+    hints:
+      - "zip(outbound, return_trip) hands you (120, 90), then (140, 125), ..."
+      - "Start daily_totals as [] and append each pair's sum."

@@ -13,7 +13,11 @@ import { join } from 'node:path'
 import { parse } from 'yaml'
 import { loadPyodide } from 'pyodide'
 import { curriculum, exercisesFile, type Exercise } from '../lib/content/schema'
-import { CHECK_DRIVER_PY, type RunResult } from '../lib/coderunner/check-driver'
+import {
+  CHECK_DRIVER_PY,
+  type RunResult,
+  type SectionedRunResult,
+} from '../lib/coderunner/check-driver'
 
 const root = process.argv[2] ?? 'content'
 let failures = 0
@@ -92,41 +96,63 @@ async function main() {
   const pyodide = await loadPyodide({ indexURL: 'node_modules/pyodide' })
   pyodide.runPython(CHECK_DRIVER_PY)
   const runFn = pyodide.globals.get('pylot_run')
+  const runSectionsFn = pyodide.globals.get('pylot_run_sections')
 
   const runChecks = (code: string, checks: unknown[]): RunResult =>
     JSON.parse(runFn(JSON.stringify(code), JSON.stringify(checks)))
+  // the exact code path the app's worker uses — validation semantics can't drift
+  const runSections = (sections: { id: string; code: string; checks: unknown[] }[]): SectionedRunResult =>
+    JSON.parse(runSectionsFn(JSON.stringify(sections)))
 
   for (const { ex } of all) {
     if (ex.runtime === 'remote') {
       console.log(`  ~ ${ex.id}: runtime=remote, execution skipped (Phase 5)`)
       continue
     }
-    const units =
-      ex.sections.length > 0
-        ? ex.sections.map((s, i) => ({
-            label: `${ex.id}#${s.id}`,
-            // cumulative: section i runs after sections 0..i-1 (ARCHITECTURE §4.4)
-            code: ex.sections.slice(0, i + 1).map((p) => p.reference_solution).join('\n'),
-            checks: s.checks,
-          }))
-        : [{ label: ex.id, code: ex.reference_solution!, checks: ex.checks }]
 
-    for (const u of units) {
-      const result = runChecks(u.code, u.checks)
-      const rubricOnly = result.checks.length > 0 && result.checks.every((c) => c.passed === null)
-      if (rubricOnly) {
-        console.log(`  ~ ${u.label}: ai_rubric-only, execution ok=${result.error === null}`)
-        if (result.error) fail(`${u.label}: reference solution errored: ${result.error.message}`)
-        continue
+    if (ex.sections.length > 0) {
+      const result = runSections(
+        ex.sections.map((s) => ({ id: s.id, code: s.reference_solution, checks: s.checks }))
+      )
+      for (const sec of result.sections) {
+        const label = `${ex.id}#${sec.id}`
+        if (!sec.ran) {
+          fail(`${label}: not run — an earlier section's reference solution errored`)
+          continue
+        }
+        if (sec.error) {
+          fail(`${label}: reference solution errored: ${sec.error.message}`)
+          continue
+        }
+        const rubricOnly = sec.checks.length > 0 && sec.checks.every((c) => c.passed === null)
+        if (rubricOnly) {
+          console.log(`  ~ ${label}: ai_rubric-only, execution ok`)
+          continue
+        }
+        if (sec.passed !== true) {
+          const why = sec.checks.filter((c) => c.passed === false).map((c) => c.detail).join('; ')
+          fail(`${label}: reference solution FAILS its own checks: ${why}`)
+        } else {
+          console.log(`  ✓ ${label}`)
+        }
       }
-      if (!result.passed) {
-        const why =
-          result.error?.message ??
-          result.checks.filter((c) => c.passed === false).map((c) => c.detail).join('; ')
-        fail(`${u.label}: reference solution FAILS its own checks: ${why}`)
-      } else {
-        console.log(`  ✓ ${u.label}`)
-      }
+      continue
+    }
+
+    const result = runChecks(ex.reference_solution!, ex.checks)
+    const rubricOnly = result.checks.length > 0 && result.checks.every((c) => c.passed === null)
+    if (rubricOnly) {
+      console.log(`  ~ ${ex.id}: ai_rubric-only, execution ok=${result.error === null}`)
+      if (result.error) fail(`${ex.id}: reference solution errored: ${result.error.message}`)
+      continue
+    }
+    if (!result.passed) {
+      const why =
+        result.error?.message ??
+        result.checks.filter((c) => c.passed === false).map((c) => c.detail).join('; ')
+      fail(`${ex.id}: reference solution FAILS its own checks: ${why}`)
+    } else {
+      console.log(`  ✓ ${ex.id}`)
     }
   }
 

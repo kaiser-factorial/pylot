@@ -1,0 +1,38 @@
+# Conditionals
+
+`if` runs a block when a condition is true. The condition ends in a **colon**, and the
+body is **indented** — that indentation *is* the block (no braces).
+
+```python
+speed = 250
+if speed > 200:
+    print("cruise")
+elif speed > 0:
+    print("taxi")
+else:
+    print("stopped")
+```
+
+`elif` (not `else if`, not `elseif`) chains alternatives; the first true branch wins and
+the rest are skipped. `else` is the catch-all. Only `if` is required — `elif` and `else`
+are optional.
+
+Conditions are any expression Python can judge truthy (you met truthiness in Ch. 1):
+comparisons (`>`, `==`, `!=`, `in`), combined with `and` / `or` / `not` — the words,
+not `&&` / `||` / `!`.
+
+```python
+if 0 < speed < 300 and "gear" not in warnings:
+    print("nominal")
+```
+
+That `0 < speed < 300` is real Python — you can chain comparisons, and it means exactly
+what the math says.
+
+<LangContrast lang="js">
+Three costume changes: the condition needs no parentheses but does need a trailing
+colon (`if x > 0:` not `if (x > 0)`), the block is indentation instead of `{}`, and the
+logical operators are the English words `and` / `or` / `not` instead of `&&` / `||` /
+`!`. Also `elif`, one word — `else if` is a syntax error. And Python lets you write
+`0 < x < 300` directly, which JS can't.
+</LangContrast>

@@ -1,22 +1,27 @@
 import type { Check } from '@/lib/content/schema'
-import { CHECK_DRIVER_PY, type RunResult } from './check-driver'
+import { CHECK_DRIVER_PY, type RunResult, type SectionedRunResult } from './check-driver'
 
-export type { RunResult, CheckResult } from './check-driver'
+export type { RunResult, CheckResult, SectionResult, SectionedRunResult } from './check-driver'
 
 export type RunOptions = { timeoutMs?: number }
+
+/** What runSections executes: one entry per section, in exercise order. */
+export type SectionRunSpec = { id: string; code: string; checks?: Check[] }
 
 // The seam ADR-002 requires: all user Python goes through this interface.
 // PyodideRunner (below) is the browser implementation; Phase 5 adds a
 // RemoteRunner (opbdh-backed) for `runtime: remote` lessons.
 export interface CodeRunner {
   run(code: string, checks?: Check[], opts?: RunOptions): Promise<RunResult>
+  /** Sectioned exercises (ARCHITECTURE §4.4): cumulative namespace, per-section checks. */
+  runSections(sections: SectionRunSpec[], opts?: RunOptions): Promise<SectionedRunResult>
   dispose(): void
 }
 
 const DEFAULT_TIMEOUT_MS = 10_000
 
 type Pending = {
-  resolve: (r: RunResult) => void
+  resolve: (r: RunResult | SectionedRunResult) => void
   reject: (e: Error) => void
   timer: ReturnType<typeof setTimeout>
 }
@@ -53,7 +58,12 @@ export class PyodideRunner implements CodeRunner {
     })
   }
 
-  private onMessage(msg: { type: string; id?: number; result?: RunResult; message?: string }) {
+  private onMessage(msg: {
+    type: string
+    id?: number
+    result?: RunResult | SectionedRunResult
+    message?: string
+  }) {
     if (msg.type === 'ready') {
       this.readyResolve?.()
       return
@@ -71,32 +81,59 @@ export class PyodideRunner implements CodeRunner {
     else p.reject(new Error(msg.message ?? 'unknown worker error'))
   }
 
-  async run(code: string, checks: Check[] = [], opts: RunOptions = {}): Promise<RunResult> {
+  /** Shared run plumbing: post a message, race it against the hard timeout. */
+  private async dispatch<R extends RunResult | SectionedRunResult>(
+    message: Record<string, unknown>,
+    onTimeout: (msg: string) => R,
+    timeoutMs: number
+  ): Promise<R> {
     await this.ensureReady()
     const id = ++this.seq
-    const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
-
-    return new Promise<RunResult>((resolve, reject) => {
+    return new Promise<R>((resolve, reject) => {
       const timer = setTimeout(() => {
         // Only worker termination reliably stops an infinite loop in wasm.
         this.pending.delete(id)
         this.dispose()
-        resolve({
-          stdout: '',
-          stderr: '',
-          error: {
-            type: 'Timeout',
-            message: `execution exceeded ${timeoutMs / 1000}s and was stopped — check for infinite loops`,
-            traceback: '',
-          },
-          checks: [],
-          workspace: [],
-          passed: false,
-        })
+        resolve(
+          onTimeout(
+            `execution exceeded ${timeoutMs / 1000}s and was stopped — check for infinite loops`
+          )
+        )
       }, timeoutMs)
-      this.pending.set(id, { resolve, reject, timer })
-      this.worker!.postMessage({ type: 'run', id, code, checks })
+      this.pending.set(id, { resolve: resolve as Pending['resolve'], reject, timer })
+      this.worker!.postMessage({ ...message, id })
     })
+  }
+
+  run(code: string, checks: Check[] = [], opts: RunOptions = {}): Promise<RunResult> {
+    const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
+    return this.dispatch<RunResult>(
+      { type: 'run', code, checks },
+      (message) => ({
+        stdout: '',
+        stderr: '',
+        error: { type: 'Timeout', message, traceback: '' },
+        checks: [],
+        workspace: [],
+        passed: false,
+      }),
+      timeoutMs
+    )
+  }
+
+  runSections(sections: SectionRunSpec[], opts: RunOptions = {}): Promise<SectionedRunResult> {
+    const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
+    return this.dispatch<SectionedRunResult>(
+      { type: 'runSections', sections },
+      (message) => ({
+        sections: [],
+        stdout: '',
+        error: { type: 'Timeout', message, traceback: '' },
+        workspace: [],
+        passed: false,
+      }),
+      timeoutMs
+    )
   }
 
   dispose() {

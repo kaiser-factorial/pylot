@@ -1,0 +1,103 @@
+exercises:
+  - id: py-flow/04-comprehensions/01-triple
+    title: Transform in one line
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Given `minutes`, build a list `seconds` where each value is multiplied
+      by 60, using a list comprehension. Print it. Expected:
+      `[300, 900, 1500]`.
+    concepts: [comprehensions]
+    starter_code: |
+      minutes = [5, 15, 25]
+      # seconds = [ ... ]
+    reference_solution: |
+      minutes = [5, 15, 25]
+      seconds = [m * 60 for m in minutes]
+      print(seconds)
+    checks:
+      - type: state
+        expr: "seconds == [300, 900, 1500]"
+      - type: ast
+        requires: [ListComp]
+        message: "use a list comprehension: [expr for item in minutes]"
+    hints:
+      - "Shape: [EXPR for ITEM in ITERABLE]."
+      - "The expression is m * 60; the source is minutes."
+
+  - id: py-flow/04-comprehensions/02-predict-filter
+    title: "Predict: transform and filter"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      This comprehension both filters (the `if`) and transforms (the
+      expression). Work out which items survive the `if`, THEN apply the
+      expression to each survivor. Predict the printed list.
+    concepts: [comprehensions]
+    starter_code: |
+      temps = [4, 19, 22, 8, 31, 15]
+      warm = [t - 10 for t in temps if t > 15]
+      print(warm)
+    reference_solution: |
+      temps = [4, 19, 22, 8, 31, 15]
+      warm = [t - 10 for t in temps if t > 15]
+      print(warm)
+    checks:
+      - type: stdout
+        equals: "[9, 12, 21]"
+    hints:
+      - "First keep only t > 15: that's 19, 22, 31. (15 is not strictly greater.)"
+      - "Then subtract 10 from each survivor: 9, 12, 21."
+
+  - id: py-flow/04-comprehensions/03-fix-comp
+    title: "Fix: the comprehension that won't build"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      This tries to collect the names longer than four letters, uppercased,
+      but the pieces are in the wrong order — the result expression and the
+      `for` clause are swapped. Fix the shape so it prints
+      `['GRACE', 'MARGARET']`.
+    concepts: [comprehensions, errors-reading]
+    starter_code: |
+      names = ["ada", "grace", "joan", "margaret"]
+      long_names = [for n in names if len(n) > 4 n.upper()]
+      print(long_names)
+    reference_solution: |
+      names = ["ada", "grace", "joan", "margaret"]
+      long_names = [n.upper() for n in names if len(n) > 4]
+      print(long_names)
+    checks:
+      - type: stdout
+        equals: "['GRACE', 'MARGARET']"
+      - type: ast
+        requires: [ListComp]
+    hints:
+      - "Read the error: the syntax is wrong. The shape is [EXPR for ITEM in SRC if COND]."
+      - "The result expression n.upper() comes FIRST, then the for, then the if."
+
+  - id: py-flow/04-comprehensions/04-dict-comp
+    title: The lookup, built
+    kind: write-code
+    difficulty: 4
+    prompt: |
+      Build a dict `code_len` mapping each airport code to its length, using
+      a DICT comprehension (`{key: value for ...}`). Print it. Expected:
+      `{'KSFO': 4, 'LAX': 3, 'ORD': 3}`.
+    concepts: [comprehensions, dicts]
+    starter_code: |
+      codes = ["KSFO", "LAX", "ORD"]
+      # code_len = { ... }
+    reference_solution: |
+      codes = ["KSFO", "LAX", "ORD"]
+      code_len = {c: len(c) for c in codes}
+      print(code_len)
+    checks:
+      - type: state
+        expr: "code_len == {'KSFO': 4, 'LAX': 3, 'ORD': 3}"
+      - type: ast
+        requires: [DictComp]
+        message: "use a dict comprehension: {key: value for item in codes}"
+    hints:
+      - "Dict comp shape: {KEY: VALUE for ITEM in SRC}."
+      - "The key is each code c; the value is len(c)."

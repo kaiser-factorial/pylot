@@ -1,0 +1,114 @@
+exercises:
+  - id: py-functions/05-capstone/01-fare-calculator
+    title: "Capstone: the fare calculator"
+    kind: capstone
+    difficulty: 4
+    prompt: |
+      Build a fare calculator from small functions, then compose them into a
+      report. Functions defined in earlier sections stay callable in later
+      ones.
+    concepts: [functions-defining, function-args, lambdas, loops-for]
+    sections:
+      - id: base
+        title: the base-fare function
+        instructions: |
+          Define `base_fare(distance, rate=0.12)` that returns
+          `distance * rate`. Give `rate` the default 0.12, so callers can
+          omit it. (No printing inside — just return.)
+        starter_code: |
+          # def base_fare(distance, rate=0.12):
+        reference_solution: |
+          def base_fare(distance, rate=0.12):
+              return distance * rate
+        checks:
+          - type: function
+            name: base_fare
+            cases:
+              - args: [100]
+                expected: 12.0
+              - args: [250]
+                expected: 30.0
+              - args: [100, 0.2]
+                expected: 20.0
+          - type: ast
+            requires: [FunctionDef]
+
+      - id: tax
+        title: the tax function
+        instructions: |
+          Define `with_tax(amount, tax=0.08)` that returns the amount plus
+          tax, ROUNDED to two decimals: `round(amount * (1 + tax), 2)`.
+          Default `tax` to 0.08.
+        starter_code: |
+          # def with_tax(amount, tax=0.08):
+        reference_solution: |
+          def with_tax(amount, tax=0.08):
+              return round(amount * (1 + tax), 2)
+        checks:
+          - type: function
+            name: with_tax
+            cases:
+              - args: [100]
+                expected: 108.0
+              - args: [50, 0.1]
+                expected: 55.0
+              - args: [45.6]
+                expected: 49.25
+          - type: ast
+            requires: [FunctionDef]
+
+      - id: price
+        title: price the routes
+        instructions: |
+          `routes` is a list of `(name, distance)` tuples. Build `priced`: a
+          list of `(name, total)` tuples where `total` is the taxed base fare
+          for that distance — compose your two functions,
+          `with_tax(base_fare(distance))`. Then set `priciest` to the single
+          costliest `(name, total)` tuple using `max` with a `key=lambda`.
+        starter_code: |
+          routes = [("SF-LA", 380), ("SF-NY", 4100), ("SF-SD", 720)]
+          # priced = ...
+          # priciest = max(priced, key=...)
+        reference_solution: |
+          routes = [("SF-LA", 380), ("SF-NY", 4100), ("SF-SD", 720)]
+          priced = [(name, with_tax(base_fare(dist))) for name, dist in routes]
+          priciest = max(priced, key=lambda r: r[1])
+        checks:
+          - type: state
+            expr: "priced == [('SF-LA', 49.25), ('SF-NY', 531.36), ('SF-SD', 93.31)]"
+            message: "each total is with_tax(base_fare(distance)), rounded"
+          - type: state
+            expr: "priciest == ('SF-NY', 531.36)"
+            message: "priciest is the max by the total (the second tuple item)"
+          - type: ast
+            requires: [Lambda]
+            message: "find the priciest with max(priced, key=lambda ...)"
+
+      - id: report
+        title: print the receipt
+        instructions: |
+          Loop over `priced` and print each as `name: $total`, then a final
+          line naming the priciest route. Expected output:
+          ```
+          SF-LA: $49.25
+          SF-NY: $531.36
+          SF-SD: $93.31
+          priciest route: SF-NY
+          ```
+        starter_code: |
+          # for name, total in priced: ...
+          # print(f"priciest route: {priciest[0]}")
+        reference_solution: |
+          for name, total in priced:
+              print(f"{name}: ${total}")
+          print(f"priciest route: {priciest[0]}")
+        checks:
+          - type: stdout
+            equals: |
+              SF-LA: $49.25
+              SF-NY: $531.36
+              SF-SD: $93.31
+              priciest route: SF-NY
+        hints:
+          - "Unpack each tuple in the loop header: for name, total in priced."
+          - "The last line uses priciest[0], the name of the costliest route."

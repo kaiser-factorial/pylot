@@ -63,12 +63,16 @@ export async function getProgression(userId: string): Promise<ProgressionState> 
   return { exercises, resume: exercises.find((e) => e.status !== 'passed') ?? null }
 }
 
-/** Upsert progress for an attempt. Never touches the attempts log itself. */
+/**
+ * Upsert progress for an attempt. Never touches the attempts log itself.
+ * Returns whether this attempt is the exercise's FIRST pass — reward
+ * triggers fire on fresh passes only, never on re-runs of a passed exercise.
+ */
 export async function recordAttemptProgress(
   userId: string,
   exerciseId: string,
   passed: boolean
-): Promise<void> {
+): Promise<{ newlyPassed: boolean }> {
   const [existing] = await db
     .select()
     .from(schema.progress)
@@ -82,7 +86,7 @@ export async function recordAttemptProgress(
       passedAt: passed ? new Date() : null,
       attemptsCount: 1,
     })
-    return
+    return { newlyPassed: passed }
   }
 
   await db
@@ -94,6 +98,8 @@ export async function recordAttemptProgress(
       passedAt: existing.passedAt ?? (passed ? new Date() : null),
     })
     .where(and(eq(schema.progress.userId, userId), eq(schema.progress.exerciseId, exerciseId)))
+
+  return { newlyPassed: passed && existing.status !== 'passed' }
 }
 
 /**

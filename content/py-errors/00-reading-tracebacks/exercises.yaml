@@ -1,0 +1,94 @@
+exercises:
+  - id: py-errors/00-reading-tracebacks/01-name-index
+    title: "Name the exception (index)"
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Read this code — do NOT run it — and decide what exception it raises:
+      ```
+      gates = ["A1", "A2", "A3"]
+      print(gates[5])
+      ```
+      Set `error_type` to the exception type's name as a string (e.g.
+      `error_type = "SomeError"`).
+    concepts: [errors-reading]
+    starter_code: |
+      # error_type = "..."
+    reference_solution: |
+      error_type = "IndexError"
+    checks:
+      - type: state
+        expr: 'error_type == "IndexError"'
+        message: "asking for index 5 of a 3-item list raises which exception?"
+    hints:
+      - "The list has indices 0, 1, 2. Index 5 is out of range."
+      - "Out-of-range list access raises IndexError."
+
+  - id: py-errors/00-reading-tracebacks/02-fix-nameerror
+    title: "Fix: read the NameError"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      Run this and read the traceback's LAST line. It's a NameError from a
+      typo — the variable is defined under one spelling and used under
+      another. Fix the typo so it prints `84`.
+    concepts: [errors-reading]
+    starter_code: |
+      altitude = 42
+      print(altiude * 2)
+    reference_solution: |
+      altitude = 42
+      print(altitude * 2)
+    checks:
+      - type: stdout
+        equals: "84"
+    hints:
+      - "The last traceback line: NameError: name 'altiude' is not defined."
+      - "The definition says altitude; the use says altiude — match them."
+
+  - id: py-errors/00-reading-tracebacks/03-fix-typeerror
+    title: "Fix: read the TypeError"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      Run it and read the bottom line of the traceback — a TypeError: you
+      can't add a string and an int. The intent is to print `runway 27`.
+      Fix it so the number becomes part of the string.
+    concepts: [errors-reading, type-conversion]
+    starter_code: |
+      runway = 27
+      print("runway " + runway)
+    reference_solution: |
+      runway = 27
+      print(f"runway {runway}")
+    checks:
+      - type: stdout
+        equals: "runway 27"
+    hints:
+      - "The error: can only concatenate str (not \"int\") to str."
+      - "Either convert with str(runway), or use an f-string: f\"runway {runway}\"."
+
+  - id: py-errors/00-reading-tracebacks/04-name-attribute
+    title: "Name the exception (attribute)"
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Read this code — do NOT run it — and name the exception it raises:
+      ```
+      route = "SFO-JFK"
+      route.push("-LAX")
+      ```
+      (`push` is a JavaScript array method; Python strings have no such
+      method.) Set `error_type` to the exception type's name as a string.
+    concepts: [errors-reading]
+    starter_code: |
+      # error_type = "..."
+    reference_solution: |
+      error_type = "AttributeError"
+    checks:
+      - type: state
+        expr: 'error_type == "AttributeError"'
+        message: "calling a method an object doesn't have raises which exception?"
+    hints:
+      - "Strings have no .push method — Python looks for the attribute and can't find it."
+      - "A missing method/attribute raises AttributeError."

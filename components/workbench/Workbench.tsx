@@ -12,12 +12,15 @@
 // Shortcuts: Mod-Enter = run, Mod-Shift-Enter = submit.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { PyodideRunner, type RunResult } from '@/lib/coderunner'
+import { PyodideRunner, type RunResult, type SectionedRunResult } from '@/lib/coderunner'
 import type { ClientExercise } from '@/lib/content/load'
 import type { ExerciseStatus } from '@/lib/progression'
 import { Panel } from '@/components/ui/Panel'
 import { CodeBlock } from '@/components/ui/CodeBlock'
 import { PythonEditor } from '@/components/editor/PythonEditor'
+import { ParsonsBoard } from './ParsonsBoard'
+import { RewardBreak } from './RewardBreak'
+import type { RewardOffer } from '@/lib/rewards'
 import { TeacherChat, type TeacherSeed } from '@/components/teacher/TeacherChat'
 import {
   CheckReportView,
@@ -25,6 +28,7 @@ import {
   DifficultyDots,
   InlineCode,
   KindBadge,
+  SectionedReportView,
   WorkbenchButton,
   WorkspaceTable,
 } from './display'
@@ -48,6 +52,8 @@ type WorkbenchProps = {
     prevHref: string | null
     nextHref: string | null
     nextIsReady: boolean
+    /** set on a chapter's first lesson while a quick review is on offer */
+    reviewHref?: string | null
   }
 }
 
@@ -83,6 +89,14 @@ export function Workbench({
   const [predictionById, setPredictionById] = useState<Record<string, string>>({})
   const [resultById, setResultById] = useState<Record<string, RunResult | null>>({})
   const [submittedById, setSubmittedById] = useState<Record<string, RunResult | null>>({})
+  // sectioned exercises (ARCHITECTURE §4.4): per-section code keyed "exId::sectionId",
+  // one current (expanded) section per exercise, sectioned run/submit results per exercise
+  const [sectionCodeById, setSectionCodeById] = useState<Record<string, string>>({})
+  const [currentSectionByEx, setCurrentSectionByEx] = useState<Record<string, string>>({})
+  const [secResultById, setSecResultById] = useState<Record<string, SectionedRunResult | null>>({})
+  const [secSubmittedById, setSecSubmittedById] = useState<Record<string, SectionedRunResult | null>>({})
+  // parsons: the learner's current permutation of the (server-scrambled) lines
+  const [parsonsOrderById, setParsonsOrderById] = useState<Record<string, number[]>>({})
   const [hintsRevealed, setHintsRevealed] = useState<Record<string, number>>(() =>
     Object.fromEntries(
       tasks.map((t) => [t.exercise.id, Math.min(t.authoredHintsRevealed, t.exercise.hints.length)])
@@ -91,12 +105,21 @@ export function Workbench({
   // right pane tabs (ARCHITECTURE §4.1: teacher chat shares the pane as a tab)
   const [rightTab, setRightTab] = useState<'workspace' | 'teacher'>('workspace')
   const [teacherSeed, setTeacherSeed] = useState<TeacherSeed | null>(null)
+  // vibecode break offer, when a graded submit triggers one (ARCHITECTURE §4.8)
+  const [rewardOffer, setRewardOffer] = useState<RewardOffer | null>(null)
 
   const taskIndex = Math.max(0, tasks.findIndex((t) => t.exercise.id === currentId))
   const task = tasks[taskIndex]
   const ex = task.exercise
   const isPredict = ex.kind === 'predict-output'
-  const code = codeById[ex.id] ?? ex.starter_code
+  const isSectioned = ex.sections.length > 0
+  const isParsons = ex.kind === 'parsons'
+  const parsonsLines = ex.parsons_lines ?? []
+  const parsonsOrder = parsonsOrderById[ex.id] ?? parsonsLines.map((_, i) => i)
+  // for parsons, "the code" IS the current ordering, joined
+  const code = isParsons
+    ? parsonsOrder.map((i) => parsonsLines[i]).join('\n')
+    : (codeById[ex.id] ?? ex.starter_code)
   const prediction = predictionById[ex.id] ?? ''
   const result = resultById[ex.id] ?? null
   const submitted = submittedById[ex.id] ?? null
@@ -105,6 +128,36 @@ export function Workbench({
   const allPassed = passedCount === tasks.length
   const nextTask = tasks.slice(taskIndex + 1).find((t) => statuses[t.exercise.id] !== 'locked')
 
+  // -------------------------------------------------- sectioned derivations
+  const sectionKey = (sectionId: string) => `${ex.id}::${sectionId}`
+  const sectionCodeOf = (s: ClientExercise['sections'][number]) =>
+    sectionCodeById[sectionKey(s.id)] ?? s.starter_code
+  const currentSectionId = isSectioned
+    ? (currentSectionByEx[ex.id] ?? ex.sections[0].id)
+    : null
+  const currentSectionIndex = isSectioned
+    ? Math.max(0, ex.sections.findIndex((s) => s.id === currentSectionId))
+    : 0
+  const secResult = secResultById[ex.id] ?? null
+  const secSubmitted = secSubmittedById[ex.id] ?? null
+  const sectionTitles = Object.fromEntries(ex.sections.map((s) => [s.id, s.title ?? s.id]))
+  /** the whole script as the teacher should see it — all sections, labeled */
+  const composedSectionCode = isSectioned
+    ? ex.sections
+        .map((s, i) => `# --- section ${i + 1}: ${s.title ?? s.id} ---\n${sectionCodeOf(s)}`)
+        .join('\n\n')
+    : null
+  const secConsole = secResult
+    ? {
+        stdout: secResult.stdout,
+        stderr: secResult.sections.map((s) => s.stderr).join(''),
+        error:
+          secResult.error ??
+          secResult.sections.find((s) => s.error)?.error ??
+          null,
+      }
+    : null
+
   useEffect(() => {
     const runner = new PyodideRunner()
     runnerRef.current = runner
@@ -112,7 +165,7 @@ export function Workbench({
     return () => runner.dispose()
   }, [])
 
-  const rebootAfterTimeout = (res: RunResult) => {
+  const rebootAfterTimeout = (res: { error: RunResult['error'] }) => {
     if (res.error?.type === 'Timeout') {
       setRunnerStatus('booting')
       runnerRef.current?.ensureReady().then(() => setRunnerStatus('ready'))
@@ -121,16 +174,150 @@ export function Workbench({
     return false
   }
 
+  const markPassedLocally = () => {
+    setStatuses((m) => {
+      const next = { ...m, [ex.id]: 'passed' as ExerciseStatus }
+      // local unlock mirror of the server rule: next task opens on pass
+      const after = tasks[taskIndex + 1]
+      if (after && next[after.exercise.id] === 'locked') next[after.exercise.id] = 'available'
+      return next
+    })
+  }
+
   async function runExploratory() {
-    if (!runnerRef.current || runnerStatus !== 'ready' || isPredict || ex.sections.length > 0) return
+    if (!runnerRef.current || runnerStatus !== 'ready' || isPredict) return
     setRunnerStatus('running')
+    if (isSectioned) {
+      // exploratory run = sections up to and including the one being worked on,
+      // no checks — the console/workspace show the cumulative state so far
+      const specs = ex.sections
+        .slice(0, currentSectionIndex + 1)
+        .map((s) => ({ id: s.id, code: sectionCodeOf(s) }))
+      const res = await runnerRef.current.runSections(specs)
+      setSecResultById((m) => ({ ...m, [ex.id]: res }))
+      if (!rebootAfterTimeout(res)) setRunnerStatus('ready')
+      return
+    }
     const res = await runnerRef.current.run(code)
     setResultById((m) => ({ ...m, [ex.id]: res }))
     if (!rebootAfterTimeout(res)) setRunnerStatus('ready')
   }
 
+  /**
+   * Fold server rubric verdicts into a sectioned result and recompute pass
+   * state. Ungraded rubric checks (budget exhausted, grader error) count as
+   * NOT passed — a capstone never passes on an unconfirmed criterion.
+   */
+  function mergeRubricVerdicts(
+    res: SectionedRunResult,
+    verdicts: { sectionId: string | null; checkIndex: number; passed: boolean; feedback: string }[] | null,
+    failureNote?: string
+  ): SectionedRunResult {
+    const sections = res.sections.map((sr) => {
+      if (!sr.ran || !sr.checks.some((c) => c.type === 'ai_rubric')) return sr
+      const checks = sr.checks.map((c) => {
+        if (c.type !== 'ai_rubric') return c
+        const v = verdicts?.find((v) => v.sectionId === sr.id && v.checkIndex === c.index)
+        if (v) return { ...c, passed: v.passed, detail: `rubric: ${v.feedback}` }
+        return { ...c, passed: false, detail: `rubric: ${failureNote ?? 'not graded — submit again'}` }
+      })
+      const passed = sr.error === null && checks.every((c) => c.passed === true)
+      return { ...sr, checks, passed }
+    })
+    return { ...res, sections, passed: sections.length > 0 && sections.every((s) => s.passed === true) }
+  }
+
+  async function submitSectioned() {
+    if (!runnerRef.current || runnerStatus !== 'ready') return
+    setRunnerStatus('running')
+    const started = performance.now()
+    const specs = ex.sections.map((s) => ({ id: s.id, code: sectionCodeOf(s), checks: s.checks }))
+    let res = await runnerRef.current.runSections(specs)
+
+    // capstones: grade ai_rubric checks server-side, then merge (invariant #2's
+    // one exception) — deterministic checks were already decided in the worker
+    const needsRubric = res.sections.some(
+      (sr) => sr.ran && sr.checks.some((c) => c.type === 'ai_rubric')
+    )
+    if (needsRubric) {
+      try {
+        const resp = await fetch('/api/rubric', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            exerciseId: ex.id,
+            sections: res.sections
+              .filter((sr) => sr.ran)
+              .map((sr) => ({
+                sectionId: sr.id,
+                code: specs.find((sp) => sp.id === sr.id)?.code ?? '',
+                stdout: sr.stdout,
+              })),
+          }),
+        })
+        if (resp.ok) {
+          const { verdicts } = await resp.json()
+          res = mergeRubricVerdicts(res, verdicts)
+        } else {
+          const err = await resp.json().catch(() => ({}))
+          res = mergeRubricVerdicts(res, null, err.detail ?? err.error ?? `grading failed (${resp.status})`)
+        }
+      } catch {
+        res = mergeRubricVerdicts(res, null, 'grading unreachable — check your connection and submit again')
+      }
+    }
+    const durationMs = performance.now() - started
+
+    setSecResultById((m) => ({ ...m, [ex.id]: res }))
+    setSecSubmittedById((m) => ({ ...m, [ex.id]: res }))
+    if (!rebootAfterTimeout(res)) setRunnerStatus('ready')
+
+    if (res.sections.length === 0) {
+      // timeout before any section completed — log one flat attempt honestly
+      await fetch('/api/attempts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          exerciseId: ex.id,
+          code: composedSectionCode ?? '',
+          result: { passed: false, checks: [], stdout: '', error: res.error },
+          durationMs,
+          graded: true,
+        }),
+      })
+      return
+    }
+
+    const resp = await fetch('/api/attempts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        exerciseId: ex.id,
+        sections: res.sections.map((sr) => ({
+          sectionId: sr.id,
+          code: specs.find((sp) => sp.id === sr.id)?.code ?? '',
+          result: {
+            passed: sr.passed,
+            checks: sr.checks,
+            stdout: sr.stdout,
+            stderr: sr.stderr,
+            error: sr.error,
+          },
+        })),
+        passed: res.passed,
+        durationMs,
+        graded: true,
+      }),
+    })
+    const respJson = await resp.json().catch(() => ({}))
+    if (respJson.reward) setRewardOffer(respJson.reward)
+
+    if (res.passed) markPassedLocally()
+  }
+
   async function submit() {
-    if (!runnerRef.current || runnerStatus !== 'ready' || ex.sections.length > 0) return
+    if (!runnerRef.current || runnerStatus !== 'ready') return
+    if (isSectioned) return submitSectioned()
     if (isPredict && prediction.trim() === '') return
     setRunnerStatus('running')
     const started = performance.now()
@@ -162,7 +349,7 @@ export function Workbench({
     setSubmittedById((m) => ({ ...m, [ex.id]: graded }))
     if (!rebootAfterTimeout(graded)) setRunnerStatus('ready')
 
-    await fetch('/api/attempts', {
+    const resp = await fetch('/api/attempts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -173,16 +360,10 @@ export function Workbench({
         graded: true,
       }),
     })
+    const respJson = await resp.json().catch(() => ({}))
+    if (respJson.reward) setRewardOffer(respJson.reward)
 
-    if (graded.passed) {
-      setStatuses((m) => {
-        const next = { ...m, [ex.id]: 'passed' as ExerciseStatus }
-        // local unlock mirror of the server rule: next task opens on pass
-        const after = tasks[taskIndex + 1]
-        if (after && next[after.exercise.id] === 'locked') next[after.exercise.id] = 'available'
-        return next
-      })
-    }
+    if (graded.passed) markPassedLocally()
   }
 
   async function revealHint() {
@@ -199,12 +380,31 @@ export function Workbench({
   // unkeyed array → spurious "unique key" dev warning on re-render.
   /** Pre-seed the teacher thread with the actual failure (learner still hits send). */
   function askTeacherAboutFailure() {
-    const res = submitted
     let detail = ''
-    if (res) {
-      const failing = res.checks.filter((c) => c.passed === false)
+    if (isSectioned && secSubmitted) {
+      // point the teacher at the FIRST failing section — that's where to look
+      const idx = secSubmitted.sections.findIndex((s) => s.passed === false || s.error)
+      const failingSec = idx >= 0 ? secSubmitted.sections[idx] : null
+      if (failingSec) {
+        const checkLines = failingSec.checks
+          .filter((c) => c.passed === false)
+          .map((c) => `${c.type}: ${c.detail}`)
+          .join('\n')
+        const errLine = failingSec.error
+          ? `${failingSec.error.type}: ${failingSec.error.message}`
+          : ''
+        detail = [
+          `section ${idx + 1} (${sectionTitles[failingSec.id]}) is the first one failing:`,
+          errLine,
+          checkLines,
+        ]
+          .filter(Boolean)
+          .join('\n')
+      }
+    } else if (submitted) {
+      const failing = submitted.checks.filter((c) => c.passed === false)
       detail = failing.map((c) => `${c.type}: ${c.detail}`).join('\n')
-      if (!detail && res.error) detail = `${res.error.type}: ${res.error.message}`
+      if (!detail && submitted.error) detail = `${submitted.error.type}: ${submitted.error.message}`
     }
     setTeacherSeed({
       text: `my submission just failed this check — can you help me see what's going on?\n\n${detail}`.trim(),
@@ -324,6 +524,7 @@ export function Workbench({
 
   return (
     <div className="fx-scanlines flex h-screen flex-col" style={{ background: 'var(--background)' }}>
+      {rewardOffer && <RewardBreak offer={rewardOffer} onDone={() => setRewardOffer(null)} />}
       {/* top bar */}
       <header className="relative z-[60] flex items-center gap-3 px-4 py-2">
         <a
@@ -396,6 +597,28 @@ export function Workbench({
               </span>
             </div>
 
+            {/* chapter-opening quick-review offer (spaced review, Phase 3) */}
+            {nav.reviewHref && (
+              <div className="px-4 pt-3">
+                <a
+                  href={nav.reviewHref}
+                  data-testid="review-banner"
+                  className="btn-anim block px-3 py-2"
+                  style={{
+                    border: '1px dashed var(--pane-border-strong)',
+                    background: 'color-mix(in srgb, var(--status-warn) 6%, transparent)',
+                  }}
+                >
+                  <span className="text-[12px]" style={{ color: 'var(--prose-fg)' }}>
+                    <span className="font-bold" style={{ color: 'var(--status-warn)' }}>
+                      new chapter:
+                    </span>{' '}
+                    quick warm-up first? a few exercises from earlier chapters, picked for you ▸
+                  </span>
+                </a>
+              </div>
+            )}
+
             {/* collapsible briefing (the lesson prose) */}
             <div className="px-4 pt-3">
               <div style={{ border: '1px solid var(--pane-border)' }}>
@@ -454,10 +677,87 @@ export function Workbench({
             bodyClassName="flex flex-col"
           >
             <div className="flex min-h-0 flex-1 flex-col">
-              {ex.sections.length > 0 ? (
-                <p className="p-4 text-[12px]" style={{ color: 'var(--muted-foreground)' }}>
-                  sectioned exercises arrive in Phase 3
-                </p>
+              {isSectioned ? (
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3" data-testid="section-stack">
+                  {ex.sections.map((s, i) => {
+                    const isCur = s.id === currentSectionId
+                    const rep = secSubmitted?.sections.find((r) => r.id === s.id) ?? null
+                    const mark =
+                      rep?.passed === true
+                        ? '✓'
+                        : rep && (rep.passed === false || rep.error)
+                          ? '✗'
+                          : rep && rep.ran === false
+                            ? '·'
+                            : isCur
+                              ? '▸'
+                              : '·'
+                    const markColor =
+                      rep?.passed === true
+                        ? 'var(--status-pass)'
+                        : rep && (rep.passed === false || rep.error)
+                          ? 'var(--status-fail)'
+                          : isCur
+                            ? 'var(--pane-title)'
+                            : 'var(--muted-foreground)'
+                    return (
+                      <div
+                        key={s.id}
+                        data-testid={`section-${i}`}
+                        style={{
+                          border: `1px solid ${isCur ? 'var(--pane-border-strong)' : 'var(--pane-border)'}`,
+                        }}
+                      >
+                        <button
+                          type="button"
+                          data-testid={`section-nav-${i}`}
+                          onClick={() =>
+                            setCurrentSectionByEx((m) => ({ ...m, [ex.id]: s.id }))
+                          }
+                          className="btn-anim flex w-full items-center gap-2 px-3 py-1.5 text-left"
+                          aria-expanded={isCur}
+                        >
+                          <span className="text-[11px] font-bold" style={{ color: markColor }}>
+                            {mark}
+                          </span>
+                          <span
+                            className="text-[10px] font-bold uppercase tracking-[0.2em]"
+                            style={{ color: isCur ? 'var(--pane-title)' : 'var(--muted-foreground)' }}
+                          >
+                            section {i + 1}
+                          </span>
+                          <span
+                            className="truncate text-[12px]"
+                            style={{ color: isCur ? 'var(--prose-fg)' : 'var(--muted-foreground)' }}
+                          >
+                            {s.title ?? s.id}
+                          </span>
+                        </button>
+                        {isCur && (
+                          <div className="flex flex-col">
+                            <p
+                              className="whitespace-pre-wrap px-3 pb-2 text-[12.5px] leading-5"
+                              data-testid="section-instructions"
+                            >
+                              <InlineCode text={s.instructions.trim()} />
+                            </p>
+                            <div className="h-52" style={{ borderTop: '1px solid var(--pane-border)' }}>
+                              <PythonEditor
+                                value={sectionCodeOf(s)}
+                                onChange={(next) =>
+                                  setSectionCodeById((m) => ({ ...m, [sectionKey(s.id)]: next }))
+                                }
+                                onRun={runExploratory}
+                                onSubmit={submit}
+                                className="h-full"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               ) : isPredict ? (
                 <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-3">
                   <p className="text-[11px] uppercase tracking-[0.15em]" style={{ color: 'var(--muted-foreground)' }}>
@@ -490,6 +790,12 @@ export function Workbench({
                     }}
                   />
                 </div>
+              ) : isParsons ? (
+                <ParsonsBoard
+                  lines={parsonsLines}
+                  order={parsonsOrder}
+                  onChange={(next) => setParsonsOrderById((m) => ({ ...m, [ex.id]: next }))}
+                />
               ) : (
                 <PythonEditor
                   value={code}
@@ -508,28 +814,41 @@ export function Workbench({
                 <WorkbenchButton
                   variant="ghost"
                   onClick={runExploratory}
-                  disabled={runnerStatus !== 'ready' || ex.sections.length > 0}
+                  disabled={runnerStatus !== 'ready'}
                   testId="run-button"
                   title="⌘↵"
                 >
-                  {runnerStatus === 'running' ? 'running…' : 'run ▸'}
+                  {runnerStatus === 'running'
+                    ? 'running…'
+                    : isSectioned
+                      ? `run sections 1–${currentSectionIndex + 1} ▸`
+                      : 'run ▸'}
                 </WorkbenchButton>
               )}
               <WorkbenchButton
                 onClick={submit}
-                disabled={runnerStatus !== 'ready' || ex.sections.length > 0 || (isPredict && prediction.trim() === '')}
+                disabled={runnerStatus !== 'ready' || (isPredict && prediction.trim() === '')}
                 testId="submit-button"
                 title={isPredict ? '⌘↵' : '⌘⇧↵'}
               >
-                {isPredict ? 'check prediction' : 'submit ✓'}
+                {isPredict ? 'check prediction' : isSectioned ? 'submit all sections ✓' : 'submit ✓'}
               </WorkbenchButton>
               {!isPredict && (
                 <WorkbenchButton
                   variant="ghost"
-                  onClick={() => setCodeById((m) => ({ ...m, [ex.id]: ex.starter_code }))}
+                  onClick={() => {
+                    if (isSectioned && currentSectionId) {
+                      const starter = ex.sections[currentSectionIndex].starter_code
+                      setSectionCodeById((m) => ({ ...m, [sectionKey(currentSectionId)]: starter }))
+                    } else if (isParsons) {
+                      setParsonsOrderById((m) => ({ ...m, [ex.id]: parsonsLines.map((_, i) => i) }))
+                    } else {
+                      setCodeById((m) => ({ ...m, [ex.id]: ex.starter_code }))
+                    }
+                  }}
                   testId="reset-button"
                 >
-                  reset
+                  {isSectioned ? 'reset section' : isParsons ? 'reset order' : 'reset'}
                 </WorkbenchButton>
               )}
 
@@ -547,11 +866,15 @@ export function Workbench({
 
           <Panel id="console" title="console + checks" fill className="min-h-0 flex-[2]">
             <Console
-              result={result}
+              result={isSectioned ? secConsole : result}
               placeholder={isPredict ? 'submit your prediction to see the real output' : 'run your code to see output'}
             />
-            {submitted && <CheckReportView checks={submitted.checks} />}
-            {submitted && !submitted.passed && (
+            {isSectioned
+              ? secSubmitted && (
+                  <SectionedReportView sections={secSubmitted.sections} titles={sectionTitles} />
+                )
+              : submitted && <CheckReportView checks={submitted.checks} />}
+            {(isSectioned ? secSubmitted && !secSubmitted.passed : submitted && !submitted.passed) && (
               <div className="px-3 pb-3">
                 <WorkbenchButton variant="ghost" onClick={askTeacherAboutFailure} testId="ask-teacher">
                   ask the teacher about this ▸
@@ -594,13 +917,13 @@ export function Workbench({
           </div>
           {/* both tabs stay mounted so a streaming teacher reply survives a tab flip */}
           <div className={rightTab === 'workspace' ? 'min-h-0 flex-1 overflow-auto' : 'hidden'}>
-            <WorkspaceTable workspace={result?.workspace ?? []} />
+            <WorkspaceTable workspace={(isSectioned ? secResult?.workspace : result?.workspace) ?? []} />
           </div>
           <div className={rightTab === 'teacher' ? 'min-h-0 flex-1' : 'hidden'}>
             <TeacherChat
               exerciseId={ex.id}
               exerciseTitle={ex.title}
-              code={isPredict ? prediction : code}
+              code={isSectioned ? (composedSectionCode ?? '') : isPredict ? prediction : code}
               seed={teacherSeed}
             />
           </div>

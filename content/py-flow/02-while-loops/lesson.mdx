@@ -1,0 +1,40 @@
+# While loops, break, and continue
+
+A `for` loop runs once per item. A `while` loop runs as long as a condition stays true —
+use it when you don't know the count in advance.
+
+```python
+fuel = 100
+while fuel > 0:
+    print(fuel)
+    fuel -= 25          # something in the body MUST move toward the exit
+```
+
+The danger of `while` is the **infinite loop**: if the condition never becomes false,
+it runs forever. (Here the app kills anything running past ~10 seconds, but a hung loop
+is still a bug.) The fix is discipline: make sure each pass changes something that
+brings the condition closer to false.
+
+Two statements steer any loop, `for` or `while`:
+
+- **`break`** exits the loop immediately — skips the rest, doesn't come back.
+- **`continue`** skips the rest of *this* pass and jumps to the next iteration.
+
+```python
+for code in ["KSFO", "STOP", "KLAX"]:
+    if code == "STOP":
+        break               # leave the loop entirely
+    print(code)             # prints KSFO only
+
+for n in [1, 2, 3, 4]:
+    if n % 2 == 0:
+        continue            # skip evens
+    print(n)                # prints 1, then 3
+```
+
+<LangContrast lang="js">
+`while (cond)` loses its parentheses and gains a colon: `while cond:`. `break` and
+`continue` are identical to JS. The one habit to drop: JS's `do...while` has no Python
+equivalent — if you need "run once, then check", run the body once before the loop or
+restructure with a `while True:` plus a `break`.
+</LangContrast>

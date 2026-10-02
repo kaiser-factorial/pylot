@@ -38,7 +38,11 @@
     ".next-verify/types/**/*.ts",
     ".next-verify/dev/types/**/*.ts",
     ".next-eval/types/**/*.ts",
-    ".next-eval/dev/types/**/*.ts"
+    ".next-eval/dev/types/**/*.ts",
+    ".next-verify3/types/**/*.ts",
+    ".next-verify3/dev/types/**/*.ts",
+    ".next-verify-tts/types/**/*.ts",
+    ".next-verify-tts/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

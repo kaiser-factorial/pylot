@@ -1,0 +1,150 @@
+exercises:
+  - id: py-structure/02-classes-reading/01-predict-instance
+    title: "Predict: making an instance"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      Read this class and the code that uses it. `__init__` stores data on
+      `self`; the method reads it back. Predict both printed lines.
+    concepts: [classes-reading]
+    starter_code: |
+      class Dog:
+          def __init__(self, name, legs):
+              self.name = name
+              self.legs = legs
+
+          def label(self):
+              return f"{self.name} has {self.legs} legs"
+
+      d = Dog("Rex", 4)
+      print(d.legs)
+      print(d.label())
+    reference_solution: |
+      class Dog:
+          def __init__(self, name, legs):
+              self.name = name
+              self.legs = legs
+
+          def label(self):
+              return f"{self.name} has {self.legs} legs"
+
+      d = Dog("Rex", 4)
+      print(d.legs)
+      print(d.label())
+    checks:
+      - type: stdout
+        equals: |
+          4
+          Rex has 4 legs
+    hints:
+      - "Dog(\"Rex\", 4) runs __init__, storing name=\"Rex\" and legs=4 on d."
+      - "d.label() reads those back through self."
+
+  - id: py-structure/02-classes-reading/02-fill-init
+    title: "Fill in: complete the constructor"
+    kind: fill-blank
+    difficulty: 3
+    prompt: |
+      Complete the two blanks (`___`) so `__init__` stores the parameters on
+      the instance, and the printout works. Expected: `Falcon` then `9000`.
+    concepts: [classes-reading]
+    starter_code: |
+      class Rocket:
+          def __init__(self, name, thrust):
+              ___.name = name
+              self.thrust = ___
+
+      r = Rocket("Falcon", 9000)
+      print(r.name)
+      print(r.thrust)
+    reference_solution: |
+      class Rocket:
+          def __init__(self, name, thrust):
+              self.name = name
+              self.thrust = thrust
+
+      r = Rocket("Falcon", 9000)
+      print(r.name)
+      print(r.thrust)
+    checks:
+      - type: stdout
+        equals: |
+          Falcon
+          9000
+      - type: state
+        expr: "r.name == 'Falcon' and r.thrust == 9000"
+    hints:
+      - "Data is stored on the instance through self: self.name = name."
+      - "The second blank is the parameter whose value goes into self.thrust."
+
+  - id: py-structure/02-classes-reading/03-fix-self
+    title: "Fix: the forgotten self"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      This method tries to read `model`, but instance data lives on `self` —
+      a bare `model` is an undefined name here, raising NameError. Add the
+      `self.` prefix so it reads the stored value. Expected: `A320`.
+    concepts: [classes-reading, errors-reading]
+    starter_code: |
+      class Plane:
+          def __init__(self, model):
+              self.model = model
+
+          def show(self):
+              return model
+
+      p = Plane("A320")
+      print(p.show())
+    reference_solution: |
+      class Plane:
+          def __init__(self, model):
+              self.model = model
+
+          def show(self):
+              return self.model
+
+      p = Plane("A320")
+      print(p.show())
+    checks:
+      - type: stdout
+        equals: "A320"
+    hints:
+      - "The error: NameError: name 'model' is not defined — inside show, model isn't a local."
+      - "Instance data is reached through self: return self.model."
+
+  - id: py-structure/02-classes-reading/04-read-inheritance
+    title: "Read it: what inherits from what"
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Reading practice — no class to write. Given this definition:
+      ```
+      class Sensor:
+          def __init__(self, unit):
+              self.unit = unit
+
+      class TempSensor(Sensor):
+          pass
+      ```
+      `TempSensor(Sensor)` means TempSensor inherits from Sensor. Set
+      `base_class` to the name of the class TempSensor inherits from (as a
+      string). Then set `constructor` to the name of the special method that
+      runs when you create an instance (as a string).
+    concepts: [classes-reading]
+    starter_code: |
+      # base_class = "..."
+      # constructor = "..."
+    reference_solution: |
+      base_class = "Sensor"
+      constructor = "__init__"
+    checks:
+      - type: state
+        expr: 'base_class == "Sensor"'
+        message: "TempSensor(Sensor) inherits from which class?"
+      - type: state
+        expr: 'constructor == "__init__"'
+        message: "which method runs when you create an instance?"
+    hints:
+      - "The name in parentheses after the class name is the parent it inherits from."
+      - "The constructor method is spelled with double underscores: __init__."

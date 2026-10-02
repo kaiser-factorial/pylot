@@ -1,0 +1,137 @@
+exercises:
+  - id: py-functions/02-args-kwargs/01-varargs
+    title: Any number of legs
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Define `trip_distance(*legs)` that accepts any number of leg distances
+      and returns their sum. The starter calls it with two, then four
+      arguments. Expected: `700` then `1500`.
+    concepts: [function-args, functions-defining]
+    starter_code: |
+      # def trip_distance(*legs):
+
+      print(trip_distance(300, 400))
+      print(trip_distance(300, 400, 500, 300))
+    reference_solution: |
+      def trip_distance(*legs):
+          return sum(legs)
+
+      print(trip_distance(300, 400))
+      print(trip_distance(300, 400, 500, 300))
+    checks:
+      - type: function
+        name: trip_distance
+        cases:
+          - args: [300, 400]
+            expected: 700
+          - args: [300, 400, 500, 300]
+            expected: 1500
+          - args: []
+            expected: 0
+      - type: ast
+        requires: [arguments]
+    hints:
+      - "*legs packs every positional argument into a tuple named legs."
+      - "sum(legs) adds them all — works for any count, even zero."
+
+  - id: py-functions/02-args-kwargs/02-predict-pack
+    title: "Predict: what gets packed where"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      One normal parameter, then `*args`, then `**kwargs`. Work out what each
+      collects, remembering `*args` is a tuple and `**kwargs` is a dict.
+      Predict all three printed lines.
+    concepts: [function-args, tuples, dicts]
+    starter_code: |
+      def show(first, *rest, **opts):
+          print(first)
+          print(rest)
+          print(opts)
+
+      show(7, 8, 9, mode="fast", debug=True)
+    reference_solution: |
+      def show(first, *rest, **opts):
+          print(first)
+          print(rest)
+          print(opts)
+
+      show(7, 8, 9, mode="fast", debug=True)
+    checks:
+      - type: stdout
+        equals: |
+          7
+          (8, 9)
+          {'mode': 'fast', 'debug': True}
+    hints:
+      - "first takes the first positional (7); *rest gathers the remaining positionals as a tuple."
+      - "The two keyword args land in the opts dict, in the order given."
+
+  - id: py-functions/02-args-kwargs/03-fix-star
+    title: "Fix: forgot to unpack"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      `announce(*names)` expects loose names, but the caller hands it a whole
+      LIST — so `names` becomes a one-element tuple containing that list, and
+      the count is wrong. Add the `*` at the call site to spread the list
+      into separate arguments. Expected output: `3 aboard`.
+    concepts: [function-args, errors-reading]
+    starter_code: |
+      def announce(*names):
+          return f"{len(names)} aboard"
+
+      crew = ["ada", "grace", "joan"]
+      print(announce(crew))
+    reference_solution: |
+      def announce(*names):
+          return f"{len(names)} aboard"
+
+      crew = ["ada", "grace", "joan"]
+      print(announce(*crew))
+    checks:
+      - type: stdout
+        equals: "3 aboard"
+      - type: ast
+        requires: [Starred]
+        message: "spread the list at the call: announce(*crew)"
+    hints:
+      - "announce(crew) passes ONE argument (the list), so len(names) is 1."
+      - "announce(*crew) spreads the list into three separate arguments."
+
+  - id: py-functions/02-args-kwargs/04-kwargs-build
+    title: Collect the options
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      Define `configure(**settings)` that returns the number of settings it
+      was given (the count of keyword arguments). The starter calls it two
+      ways. Expected: `2` then `0`.
+    concepts: [function-args, dicts]
+    starter_code: |
+      # def configure(**settings):
+
+      print(configure(wifi=True, meal="veg"))
+      print(configure())
+    reference_solution: |
+      def configure(**settings):
+          return len(settings)
+
+      print(configure(wifi=True, meal="veg"))
+      print(configure())
+    checks:
+      - type: function
+        name: configure
+        cases:
+          - args: []
+            expected: 0
+      - type: stdout
+        equals: |
+          2
+          0
+      - type: ast
+        requires: [arguments]
+    hints:
+      - "**settings collects every keyword argument into a dict."
+      - "len(settings) is how many were passed — 2 in the first call, 0 in the second."

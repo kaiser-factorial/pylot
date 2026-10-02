@@ -1,0 +1,141 @@
+exercises:
+  - id: py-errors/01-try-except/01-safe-int
+    title: Guard the conversion
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Define `safe_int(text)` that returns `int(text)`, but returns `-1` if
+      the text can't be converted (catch `ValueError`). The starter tests
+      both paths. Expected: `42` then `-1`.
+    concepts: [try-except, functions-defining]
+    starter_code: |
+      # def safe_int(text):
+      #     try:
+      #         ...
+      #     except ValueError:
+      #         ...
+
+      print(safe_int("42"))
+      print(safe_int("oops"))
+    reference_solution: |
+      def safe_int(text):
+          try:
+              return int(text)
+          except ValueError:
+              return -1
+
+      print(safe_int("42"))
+      print(safe_int("oops"))
+    checks:
+      - type: function
+        name: safe_int
+        cases:
+          - args: ["42"]
+            expected: 42
+          - args: ["oops"]
+            expected: -1
+          - args: ["7"]
+            expected: 7
+      - type: ast
+        requires: [Try]
+        message: "wrap the int() call in try/except ValueError"
+    hints:
+      - "int(\"oops\") raises ValueError — put the int() in the try block."
+      - "The except ValueError block returns -1."
+
+  - id: py-errors/01-try-except/02-predict-flow
+    title: "Predict: which blocks run"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      Trace the control flow: the try raises, so `else` is skipped but
+      `finally` still runs. Predict every printed line, in order.
+    concepts: [try-except]
+    starter_code: |
+      try:
+          x = int("NaN")
+          print("parsed")
+      except ValueError:
+          print("caught")
+      else:
+          print("no error")
+      finally:
+          print("cleanup")
+    reference_solution: |
+      try:
+          x = int("NaN")
+          print("parsed")
+      except ValueError:
+          print("caught")
+      else:
+          print("no error")
+      finally:
+          print("cleanup")
+    checks:
+      - type: stdout
+        equals: |
+          caught
+          cleanup
+    hints:
+      - "int(\"NaN\") raises immediately, so \"parsed\" never prints and else is skipped."
+      - "except runs (caught), then finally always runs (cleanup)."
+
+  - id: py-errors/01-try-except/03-fix-bare-except
+    title: "Fix: the except that hid the bug"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      This catches a missing dict key and falls back to 0 — but the bare
+      `except` is too broad: it would also swallow unrelated bugs (a typo'd
+      name, a wrong type) and hide them. Narrow it to catch only `KeyError`,
+      the failure you actually expect. The missing key `"joan"` is still
+      caught, so it prints `0`.
+    concepts: [try-except, errors-reading]
+    starter_code: |
+      scores = {"ada": 90, "grace": 88}
+      try:
+          value = scores["joan"]
+      except:
+          value = 0
+      print(value)
+    reference_solution: |
+      scores = {"ada": 90, "grace": 88}
+      try:
+          value = scores["joan"]
+      except KeyError:
+          value = 0
+      print(value)
+    checks:
+      - type: stdout
+        equals: "0"
+      - type: ast
+        requires: [Try, ExceptHandler]
+        message: "catch KeyError specifically, not a bare except"
+    hints:
+      - "A bare `except:` catches everything, including bugs you didn't mean to hide."
+      - "Name the exception you expect: except KeyError."
+
+  - id: py-errors/01-try-except/04-parsons-retry
+    title: "Reorder: parse with a fallback"
+    kind: parsons
+    difficulty: 2
+    prompt: |
+      These lines try to read a number from a dict and parse it, falling
+      back to 0 on any bad value. Order them into a valid try/except that
+      prints the parsed count.
+    concepts: [try-except]
+    reference_solution: |
+      config = {"count": "twelve"}
+      try:
+          count = int(config["count"])
+      except ValueError:
+          count = 0
+      print(f"count is {count}")
+    checks:
+      - type: stdout
+        equals: "count is 0"
+      - type: state
+        expr: "count == 0"
+    hints:
+      - "The try block holds the risky int() call; the except handles its failure."
+      - "config must be defined before the try that reads from it."

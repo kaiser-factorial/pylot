@@ -1,0 +1,132 @@
+exercises:
+  - id: py-structure/05-capstone/01-stats-tool
+    title: "Capstone: the stats tool"
+    kind: capstone
+    difficulty: 4
+    prompt: |
+      Build a small, well-structured stats program: a parser, a summarizer,
+      a main() that composes them under the entry-point guard — then explain
+      an AI-generated line in your own words. Names carry forward between
+      sections.
+    concepts: [main-pattern, functions-defining, lambdas, classes-reading]
+    sections:
+      - id: parse
+        title: the parser
+        instructions: |
+          Define `parse_record(line)` that takes a string like `"ada:90"`,
+          splits it on `":"`, and returns a tuple `(name, score)` where the
+          score is an `int`. So `parse_record("ada:90")` returns
+          `("ada", 90)`.
+        starter_code: |
+          # def parse_record(line):
+        reference_solution: |
+          def parse_record(line):
+              name, score = line.split(":")
+              return (name, int(score))
+        checks:
+          # state (not function) check: the expected value is a real tuple,
+          # which JSON/YAML can't express in a function-check `expected`
+          - type: state
+            expr: "parse_record('ada:90') == ('ada', 90) and parse_record('z:0') == ('z', 0)"
+            message: "parse_record splits on ':' and returns (name, int(score))"
+          - type: ast
+            requires: [FunctionDef]
+
+      - id: summarize
+        title: the summarizer
+        instructions: |
+          Define `summarize(records)` that takes a list of `(name, score)`
+          tuples and returns a dict with two keys: `"average"` (the mean
+          score, rounded to 1 decimal) and `"top"` (the name with the highest
+          score, found via `max` with a `key=lambda`).
+        starter_code: |
+          # def summarize(records):
+        reference_solution: |
+          def summarize(records):
+              scores = [score for name, score in records]
+              average = round(sum(scores) / len(scores), 1)
+              top = max(records, key=lambda r: r[1])[0]
+              return {"average": average, "top": top}
+        checks:
+          - type: function
+            name: summarize
+            cases:
+              - args: [[["ada", 90], ["grace", 85], ["joan", 95]]]
+                expected: { "average": 90.0, "top": "joan" }
+          - type: ast
+            requires: [FunctionDef, Lambda]
+
+      - id: main
+        title: compose in main()
+        instructions: |
+          The `lines` list is given. Define `main()` that parses every line
+          into a `records` list (use `parse_record`), calls `summarize`, and
+          prints two lines:
+          ```
+          average: 90.0
+          top scorer: joan
+          ```
+          Then add the `if __name__ == "__main__":` guard calling `main()`.
+        starter_code: |
+          lines = ["ada:90", "grace:85", "joan:95"]
+          # def main(): ...
+          # if __name__ == "__main__": main()
+        reference_solution: |
+          lines = ["ada:90", "grace:85", "joan:95"]
+
+          def main():
+              records = [parse_record(line) for line in lines]
+              stats = summarize(records)
+              print(f"average: {stats['average']}")
+              print(f"top scorer: {stats['top']}")
+
+          if __name__ == "__main__":
+              main()
+        checks:
+          - type: stdout
+            equals: |
+              average: 90.0
+              top scorer: joan
+          - type: ast
+            requires: [If, FunctionDef]
+            message: "compose in main() and guard it with if __name__ == \"__main__\""
+
+      - id: explain
+        title: explain the machine's code
+        instructions: |
+          Here is a dense line an AI might hand you. It builds a list of the
+          names of everyone who scored below the average:
+          ```
+          below = [name for name, score in records if score < summarize(records)["average"]]
+          ```
+          You do NOT need to run it. In your own words, assign a string
+          `explanation` (two to three sentences) describing what this line
+          computes and how — name the comprehension, the filter condition,
+          and what `below` ends up holding. Be specific and correct; the
+          teacher checks your explanation against what the code actually does.
+        starter_code: |
+          # explanation = "..."
+        reference_solution: |
+          explanation = (
+              "It's a list comprehension over records, unpacking each into name and score. "
+              "The `if` keeps only records whose score is below the class average "
+              "(computed by calling summarize(records) and reading its 'average' key). "
+              "So `below` ends up as a list of the names of everyone who scored below average."
+          )
+        checks:
+          - type: state
+            expr: "isinstance(explanation, str) and len(explanation) > 60"
+            message: "write a real two-to-three sentence explanation"
+          - type: ai_rubric
+            rubric: |
+              The `explanation` correctly describes the one-liner: it must
+              identify that this is a list comprehension over `records`, that
+              the `if` filters to scores BELOW the average (the average being
+              computed via summarize(records)["average"]), and that `below`
+              ends up holding the NAMES (not scores, not full records) of the
+              below-average people. It must not misstate the filter direction
+              (below, not above) or claim `below` holds scores or tuples.
+              A vague restatement that names none of these specifics fails.
+        hints:
+          - "Read it inside-out: what does summarize(records)[\"average\"] give you?"
+          - "Then: what does the `if` keep, and is `name` or `score` collected into the list?"

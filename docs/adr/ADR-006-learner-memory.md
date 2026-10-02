@@ -66,7 +66,7 @@ Short notes the agent may persist mid-conversation ("prefers hints as questions"
 | Concept tags in content schema + vocabulary + validator rule | **now** (pre-Phase 1, so all content is tagged from birth) |
 | Onboarding survey → profile; profile injected into teacher context | Phase 2 |
 | Derived struggle summary in teacher context (shares Phase 3 struggle-score work) | Phase 3 |
-| Episodic notes + "what the teacher remembers" panel | Phase 3 (optional scope) |
+| Episodic notes + "what the teacher remembers" panel | ~~Phase 3 (optional scope)~~ deferred to Phase 4 (owner decision, 2026-07-04) |
 | Mastery estimates / adaptive difficulty on the same tags | Phase 7 |
 
 ## Consequences

@@ -6,6 +6,7 @@
 // logic does. Killed and respawned by PyodideRunner on timeout.
 
 let runFn = null
+let runSectionsFn = null
 
 self.onmessage = async (e) => {
   const msg = e.data
@@ -15,10 +16,15 @@ self.onmessage = async (e) => {
       const pyodide = await loadPyodide({ indexURL: msg.indexURL })
       pyodide.runPython(msg.driver)
       runFn = pyodide.globals.get('pylot_run')
+      runSectionsFn = pyodide.globals.get('pylot_run_sections')
       self.postMessage({ type: 'ready' })
     } else if (msg.type === 'run') {
       if (!runFn) throw new Error('worker not initialized')
       const json = runFn(JSON.stringify(msg.code), JSON.stringify(msg.checks || []))
+      self.postMessage({ type: 'result', id: msg.id, result: JSON.parse(json) })
+    } else if (msg.type === 'runSections') {
+      if (!runSectionsFn) throw new Error('worker not initialized')
+      const json = runSectionsFn(JSON.stringify(msg.sections || []))
       self.postMessage({ type: 'result', id: msg.id, result: JSON.parse(json) })
     }
   } catch (err) {

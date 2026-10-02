@@ -70,8 +70,27 @@ export const rewardEvents = sqliteTable('reward_events', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('user_id').notNull().references(() => users.id),
   chapterId: text('chapter_id').notNull(),
+  // set for high_struggle_pass triggers — the dedupe key so one hard-won
+  // exercise never spawns two offers; null for chapter_complete
+  exerciseId: text('exercise_id'),
   triggerReason: text('trigger_reason', { enum: ['chapter_complete', 'high_struggle_pass'] }).notNull(),
   struggleScore: real('struggle_score').notNull().default(0),
   accepted: integer('accepted', { mode: 'boolean' }),
+  // the generated toy (self-contained HTML for the sandboxed iframe) — kept
+  // so an accepted break survives a reload
+  toyHtml: text('toy_html'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
+})
+
+// Additive speech ledger: reservation rows remain counted after a timeout/crash
+// because the provider may have generated (and billed) audio we never received.
+export const aiSpeechUsage = sqliteTable('ai_speech_usage', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id),
+  kind: text('kind').notNull().default('tts'),
+  model: text('model').notNull(),
+  characters: integer('characters').notNull(),
+  costUsd: real('cost_usd').notNull(),
+  status: text('status', { enum: ['reserved', 'charged', 'released'] }).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
 })

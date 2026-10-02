@@ -1,0 +1,126 @@
+exercises:
+  - id: py-flow/02-while-loops/01-countdown
+    title: The countdown
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Using a `while` loop, print a countdown from 5 down to 1 (one number
+      per line), then print `liftoff`. Start from the given `n = 5` and
+      decrease it each pass.
+    concepts: [loops-while]
+    starter_code: |
+      n = 5
+      # while ...
+    reference_solution: |
+      n = 5
+      while n > 0:
+          print(n)
+          n -= 1
+      print("liftoff")
+    checks:
+      - type: stdout
+        equals: |
+          5
+          4
+          3
+          2
+          1
+          liftoff
+      - type: ast
+        requires: [While]
+    hints:
+      - "Loop while n > 0; print n, then n -= 1 so it moves toward 0."
+      - "The liftoff print goes AFTER the loop, un-indented."
+
+  - id: py-flow/02-while-loops/02-predict-continue
+    title: "Predict: skip and stop"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      `continue` skips the rest of this pass; `break` leaves the loop for
+      good. Walk each value of `n` and predict every printed line.
+    concepts: [break-continue, loops-for]
+    starter_code: |
+      for n in [1, 2, 3, 4, 5, 6]:
+          if n == 3:
+              continue
+          if n == 5:
+              break
+          print(n)
+    reference_solution: |
+      for n in [1, 2, 3, 4, 5, 6]:
+          if n == 3:
+              continue
+          if n == 5:
+              break
+          print(n)
+    checks:
+      - type: stdout
+        equals: |
+          1
+          2
+          4
+    hints:
+      - "3 is skipped by continue (never printed); 1, 2, 4 print normally."
+      - "At 5, break ends the loop — 5 and 6 never print."
+
+  - id: py-flow/02-while-loops/03-fix-infinite
+    title: "Fix: the loop that never ends"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      This while loop prints `balance`, then should halve it, looping while
+      it stays at 10 or above. But nothing inside changes `balance`, so it
+      never ends (the runner will stop it after a timeout). Add the one line
+      that halves it with integer division. Starting at 160 it should print
+      `160`, `80`, `40`, `20`, `10`, then stop.
+    concepts: [loops-while, errors-reading]
+    starter_code: |
+      balance = 160
+      while balance >= 10:
+          print(balance)
+          # the balance never changes — fix that
+    reference_solution: |
+      balance = 160
+      while balance >= 10:
+          print(balance)
+          balance //= 2
+    checks:
+      - type: stdout
+        equals: |
+          160
+          80
+          40
+          20
+          10
+      - type: ast
+        requires: [While]
+    hints:
+      - "The condition is balance >= 10, but balance never shrinks — the loop can't end."
+      - "Halve it each pass: balance //= 2 (integer division keeps it a whole number)."
+
+  - id: py-flow/02-while-loops/04-parsons-search
+    title: "Reorder: find the first heavy bag"
+    kind: parsons
+    difficulty: 3
+    prompt: |
+      These lines scan a list of bag weights and stop at the first one over
+      the limit, reporting its position. Order them: set up before the loop,
+      check inside, break when found, report after.
+    concepts: [break-continue, loops-for]
+    reference_solution: |
+      weights = [12, 18, 9, 25, 14]
+      over = -1
+      for i in range(len(weights)):
+          if weights[i] > 20:
+              over = i
+              break
+      print(f"first heavy bag at index {over}")
+    checks:
+      - type: stdout
+        equals: "first heavy bag at index 3"
+      - type: state
+        expr: "over == 3"
+    hints:
+      - "`over` must be initialized before the loop can assign to it."
+      - "The break belongs right after recording the index, so it stops at the FIRST match."

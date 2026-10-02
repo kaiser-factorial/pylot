@@ -1,0 +1,39 @@
+# Modules and imports
+
+A **module** is just a `.py` file. Its functions and variables become available elsewhere
+with `import`. Python ships hundreds of modules in its **standard library** — `math`,
+`random`, `json` (you used that), `datetime` — no install required.
+
+Three import forms, each with a different feel at the call site:
+
+```python
+import math                     # use as math.sqrt(...)
+math.sqrt(16)                   # 4.0
+
+from math import sqrt, pi       # bring specific names in directly
+sqrt(16)                        # 4.0 — no prefix
+
+import statistics as stats      # rename on import
+stats.mean([1, 2, 3])          # 2
+```
+
+- `import math` — namespaced; you write `math.name`. Clearest about where things come from.
+- `from math import sqrt` — pulls `sqrt` into your file directly; shorter calls, but you lose
+  the "where did this come from" signal. Reserve for a few well-known names.
+- `import numpy as np` — the aliasing you'll see everywhere in data code (`np`, `pd`, `plt`).
+
+## pip and virtual environments (the concept)
+
+The standard library is built in. Everything else — numpy, pandas, torch — is a
+**third-party package** you install with **`pip`** (`pip install numpy`). A **virtual
+environment** (`venv`) is an isolated per-project folder of installed packages, so Project A's
+numpy version can't collide with Project B's. You won't run these in this browser app, but you
+need the mental model: *stdlib is free; everything else is pip-installed into a venv.*
+
+<LangContrast lang="js">
+`import math` / `from math import sqrt` map onto ES modules: `import * as math` vs
+`import { sqrt }`. `pip` is `npm`, a `venv` is roughly `node_modules` but activated per-shell
+instead of just living in the folder, and `requirements.txt` plays the role of
+`package.json`'s dependency list. The standard library is far bigger than JS's — a lot of
+what you'd reach to npm for (JSON, dates, random, paths) is built into Python.
+</LangContrast>

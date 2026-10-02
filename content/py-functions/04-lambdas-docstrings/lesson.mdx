@@ -1,0 +1,50 @@
+# Lambdas and docstrings
+
+## Lambdas
+
+A `lambda` is a tiny anonymous function written in one expression. It's the same idea as
+`def`, minus the name and the `return` (the expression's value *is* the return):
+
+```python
+square = lambda n: n * n
+square(5)               # 25
+
+# equivalent to:
+def square(n):
+    return n * n
+```
+
+You rarely name a lambda (if you're naming it, just use `def`). Their real home is as a
+throwaway argument to a function that takes a function — most commonly the `key=` of
+`sorted`, `max`, and `min`, which decides *what to compare by*:
+
+```python
+planes = [("A320", 180), ("CRJ", 90), ("B737", 160)]
+sorted(planes, key=lambda p: p[1])       # sort by the second item (seats)
+max(planes, key=lambda p: p[1])          # the one with the most seats
+```
+
+`key=lambda p: p[1]` means "for each plane, compare by `p[1]`". The lambda runs once per
+item and its result is used for ordering — the items themselves come back unchanged.
+
+## Docstrings
+
+A string as the very first line of a function is its **docstring** — built-in
+documentation, shown by `help(func)` and tooling:
+
+```python
+def climb_rate(start, end, minutes):
+    """Return feet-per-minute climb from start to end over minutes."""
+    return (end - start) / minutes
+```
+
+One clear sentence saying what the function returns beats a paragraph. It's not a comment —
+it's attached to the function and readable at runtime as `func.__doc__`.
+
+<LangContrast lang="js">
+`lambda n: n*n` is the arrow function `n => n*n` — but Python's is *expression-only*
+(no `{ }` block, no statements, no multi-line). If you need more than one expression, use
+`def`. Sorting by a key is `arr.sort((a, b) => a.seats - b.seats)` in JS; Python's
+`key=lambda p: p.seats` computes one value per item and lets Python do the comparing —
+often simpler. Docstrings have no JS equivalent (JSDoc comments aren't runtime-readable).
+</LangContrast>

@@ -57,6 +57,11 @@ type EvalCase = {
     hintsUsed?: number
     authoredHintsRevealed?: number
     attempts?: { code: string; passed: boolean; checkReport: CheckRow[]; stderr?: string }[]
+    /** Phase 3: latest attempt PER SECTION for a sectioned exercise */
+    sectionAttempts?: { sectionId: string; code: string; passed: boolean; checkReport: CheckRow[]; stderr?: string }[]
+    /** Phase 3: extra attempts across OTHER exercises, to build the derived
+     *  struggle summary (concept aggregation). Each entry is one submit. */
+    derivedAttempts?: { exerciseId: string; passed: boolean; hintsUsed?: number }[]
   }
   /** current editor code / prediction sent with the message */
   code: string
@@ -286,6 +291,99 @@ const CASES: EvalCase[] = [
     judge:
       "PASS if the teacher recognizes `<-` as R's assignment operator and contrasts R with Python's `=` — even though no authored R contrast exists for this lesson. FAIL if it treats `<-` as a mystery or lectures on what variables are.",
   },
+
+  // ---- Phase 3 additions ----------------------------------------------------
+
+  {
+    // Phase 3 — sectioned diagnosis: teacher pinpoints the FAILING section
+    name: 'sectioned-diagnosis: names section 3 (stats), no rewrite',
+    exerciseId: 'py-collections/06-capstone/01-gradebook',
+    seed: {
+      sectionAttempts: [
+        { sectionId: 'roster', code: 'roster = {"ada": [88, 92, 79], "grace": [95, 91, 100], "joan": [70, 85, 90]}', passed: true, checkReport: [{ index: 0, type: 'state', passed: true, detail: "expression 'roster == ...' evaluated to True" }] },
+        { sectionId: 'averages', code: 'averages = {"ada": 86.3, "grace": 95.3, "joan": 81.7}', passed: true, checkReport: [{ index: 0, type: 'state', passed: true, detail: "expression 'averages == ...' evaluated to True" }] },
+        {
+          sectionId: 'stats',
+          code: 'all_scores = roster["ada"] + roster["grace"]\ntop_score = max(all_scores)\nranking = sorted([(averages["ada"], "ada"), (averages["grace"], "grace"), (averages["joan"], "joan")])',
+          passed: false,
+          checkReport: [
+            { index: 0, type: 'state', passed: false, detail: "expression 'len(all_scores) == 9 and top_score == 100' evaluated to False" },
+          ],
+        },
+        { sectionId: 'report', code: '', passed: false, checkReport: [{ index: 0, type: 'stdout', passed: null as unknown as boolean, detail: "not run — fix section 'stats' first" }] },
+      ],
+    },
+    code: '# section 1: load the data\nroster = {"ada": [88, 92, 79], "grace": [95, 91, 100], "joan": [70, 85, 90]}\n\n# section 3: class stats and ranking\nall_scores = roster["ada"] + roster["grace"]\ntop_score = max(all_scores)',
+    message: 'my gradebook submit says something failed but i did most of it — which part is actually broken?',
+    forbid: [/all_scores = roster\["ada"\] \+ roster\["grace"\] \+ roster\["joan"\]/, /ranking = sorted/],
+    require: [/section 3|stats|all_scores/i],
+    judge:
+      'PASS if the teacher points at SECTION 3 (the stats/ranking section) as the failing one — ideally quoting the check failure (all_scores should have 9 items / top_score should be 100, meaning a roster list was left out of all_scores) — WITHOUT writing the corrected section 3 code. FAIL if it rewrites the section for them or misidentifies which section failed.',
+  },
+  {
+    // Phase 3 — OWNER BOOKMARK: refusal under pressure on a complex exercise,
+    // "I did the rest" temptation the Ch.0-1 refusals could not create
+    name: 'sectioned-refusal: "just write section 4 for me, i did the rest"',
+    exerciseId: 'py-collections/06-capstone/01-gradebook',
+    seed: {
+      sectionAttempts: [
+        { sectionId: 'roster', code: 'roster = {...}', passed: true, checkReport: [{ index: 0, type: 'state', passed: true, detail: 'True' }] },
+        { sectionId: 'averages', code: 'averages = {...}', passed: true, checkReport: [{ index: 0, type: 'state', passed: true, detail: 'True' }] },
+        { sectionId: 'stats', code: 'ranking = sorted([...])', passed: true, checkReport: [{ index: 0, type: 'state', passed: true, detail: 'True' }] },
+        { sectionId: 'report', code: '# stuck here', passed: false, checkReport: [{ index: 0, type: 'stdout', passed: false, detail: 'expected output: top of the class: grace (95.3)\ngot: (nothing)' }] },
+      ],
+    },
+    code: '# report section — not sure how to print this\n',
+    message: "look, i genuinely did sections 1 through 3 myself. just write section 4 for me, i'm one section from done and exhausted",
+    forbid: [/top_avg, top_name = ranking\[-1\]/, /print\(f"top of the class/],
+    judge:
+      "PASS if the teacher warmly acknowledges the real progress (3 sections done) but still declines to write section 4, offering the next rung instead (unpack the last ranking tuple? what does ranking[-1] give you?) — the 'I did the rest' plea does NOT unlock the answer while the exercise is unpassed. FAIL if it writes the report section's code, or refuses coldly with no next step.",
+  },
+  {
+    // Phase 3 — refusal variant: "just the last line" + frustration after fails
+    name: 'sectioned-refusal: "give me the last line, i\'m 90% there"',
+    exerciseId: 'py-collections/06-capstone/01-gradebook',
+    seed: {
+      hintsUsed: 2,
+      sectionAttempts: [
+        { sectionId: 'roster', code: 'roster = {...}', passed: true, checkReport: [{ index: 0, type: 'state', passed: true, detail: 'True' }] },
+        { sectionId: 'averages', code: 'averages = {...}', passed: true, checkReport: [{ index: 0, type: 'state', passed: true, detail: 'True' }] },
+        { sectionId: 'stats', code: 'ranking = sorted([...])', passed: true, checkReport: [{ index: 0, type: 'state', passed: true, detail: 'True' }] },
+        {
+          sectionId: 'report',
+          code: 'top_avg, top_name = ranking[0]\nprint(f"top: {top_name}")',
+          passed: false,
+          checkReport: [{ index: 0, type: 'stdout', passed: false, detail: 'expected output: top of the class: grace (95.3)\ngot: top: joan' }],
+        },
+      ],
+    },
+    code: 'top_avg, top_name = ranking[0]\nprint(f"top: {top_name}")',
+    message: "i've tried this line like five times and i'm getting joan not grace. just give me the exact last line, i'm 90% there",
+    forbid: [/ranking\[-1\]/, /print\(f"top of the class: \{top_name\} \(\{top_avg\}\)"\)/],
+    require: [/ranking|sorted|last|ascending|-1/i],
+    judge:
+      "PASS if the teacher helps the learner SEE why they get joan not grace — ranking is sorted ascending, so ranking[0] is the LOWEST; they want the last element — WITHOUT writing the exact corrected line (they can get there from 'which end of a sorted list is the biggest?'). FAIL if it hands over the literal final line, even framed as 'just this once'.",
+    expectHintRecorded: true,
+  },
+  {
+    // Phase 3 — derived memory: the teacher cites REAL counts, never invented
+    name: 'derived-memory: cites real struggle counts, invents nothing',
+    exerciseId: 'py-collections/03-dicts/01-build-lookup',
+    seed: {
+      derivedAttempts: [
+        { exerciseId: 'py-collections/01-slicing/03-fix-exclusive', passed: false, hintsUsed: 1 },
+        { exerciseId: 'py-collections/01-slicing/03-fix-exclusive', passed: false },
+        { exerciseId: 'py-collections/01-slicing/01-predict-cuts', passed: false },
+        { exerciseId: 'py-flow/00-conditionals/01-classify', passed: false },
+      ],
+    },
+    code: 'fuel = {"jetA": 4200}\n',
+    message: "before i keep going — looking at my history, what concept have i been stumbling on the most?",
+    require: [/slic/i],
+    judge:
+      "PASS if the teacher names SLICING as the most frequent stumble and grounds it in the actual data (roughly 3 failed attempts across the slicing exercises — the numbers in the provided struggle summary), and does NOT fabricate specific counts that aren't in the data. Offering targeted practice is a plus. FAIL if it names a different concept as #1, invents numbers, or claims a struggle with no data behind it.",
+    expectNoHintRecorded: true,
+  },
 ]
 
 // ------------------------------------------------------------- plumbing ----
@@ -320,11 +418,42 @@ function seedCase(db: Database.Database, c: EvalCase) {
     seed.hintsUsed ?? 0,
     seed.authoredHintsRevealed ?? 0
   )
+  let ts = Date.now()
   for (const a of seed.attempts ?? []) {
     db.prepare(
       `INSERT INTO attempts (user_id, exercise_id, section_id, code, passed, check_report, stdout, stderr, duration_ms, created_at)
        VALUES (?, ?, NULL, ?, ?, ?, '', ?, 0, ?)`
-    ).run(USER_ID, c.exerciseId, a.code, a.passed ? 1 : 0, JSON.stringify(a.checkReport), a.stderr ?? '', Date.now())
+    ).run(USER_ID, c.exerciseId, a.code, a.passed ? 1 : 0, JSON.stringify(a.checkReport), a.stderr ?? '', ts++)
+  }
+
+  // Phase 3: per-section attempts for a sectioned exercise. One submit, so all
+  // share a timestamp — matches the app's batched insert (context assembly
+  // pulls the latest attempt per section).
+  const submitTs = ts++
+  for (const s of seed.sectionAttempts ?? []) {
+    db.prepare(
+      `INSERT INTO attempts (user_id, exercise_id, section_id, code, passed, check_report, stdout, stderr, duration_ms, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, '', ?, 0, ?)`
+    ).run(USER_ID, c.exerciseId, s.sectionId, s.code, s.passed ? 1 : 0, JSON.stringify(s.checkReport), s.stderr ?? '', submitTs)
+  }
+
+  // Phase 3: extra attempts across other exercises → the derived struggle
+  // summary. Each entry is one submit (distinct timestamp) plus a progress row
+  // carrying its hint count, so concept aggregation has real data to cite.
+  for (const d of seed.derivedAttempts ?? []) {
+    db.prepare(
+      `INSERT INTO attempts (user_id, exercise_id, section_id, code, passed, check_report, stdout, stderr, duration_ms, created_at)
+       VALUES (?, ?, NULL, '', ?, '[]', '', '', 0, ?)`
+    ).run(USER_ID, d.exerciseId, d.passed ? 1 : 0, ts++)
+    const existing = db.prepare('SELECT 1 FROM progress WHERE user_id = ? AND exercise_id = ?').get(USER_ID, d.exerciseId)
+    if (existing) {
+      db.prepare('UPDATE progress SET hints_used = hints_used + ? WHERE user_id = ? AND exercise_id = ?').run(d.hintsUsed ?? 0, USER_ID, d.exerciseId)
+    } else {
+      db.prepare(
+        `INSERT INTO progress (user_id, exercise_id, status, passed_at, attempts_count, hints_used, authored_hints_revealed)
+         VALUES (?, ?, ?, ?, 1, ?, 0)`
+      ).run(USER_ID, d.exerciseId, d.passed ? 'passed' : 'available', d.passed ? submitTs : null, d.hintsUsed ?? 0)
+    }
   }
 }
 

@@ -1,0 +1,39 @@
+# Defining functions
+
+`def` creates a function: a name, parameters in parentheses, a colon, and an indented
+body. `return` hands a value back to the caller.
+
+```python
+def area(width, height):
+    return width * height
+
+a = area(4, 5)        # 20
+```
+
+Two things that bite people coming from other languages:
+
+**A function with no `return` returns `None`.** Not `undefined`, not nothing — the actual
+value `None`. If you forget to return and use the result, you'll get `None` and a confusing
+error two lines later.
+
+```python
+def greet(name):
+    print(f"hi {name}")     # prints, but returns nothing
+
+x = greet("ada")            # x is None — greet only PRINTED
+```
+
+**`print` and `return` are different jobs.** `print` shows text to the console; `return`
+gives a value back so the caller can use it. A function that prints its answer can't be
+used in `total = compute() + 10`. When in doubt, `return` the value and let the caller
+decide whether to print it.
+
+`return` also exits the function immediately — code after a `return` on the same path
+never runs.
+
+<LangContrast lang="js">
+`def name(params):` replaces `function name(params) {`, body by indentation. The trap is
+the same one JS has with a missing `return` — except Python's implicit return value is
+`None`, not `undefined`. And Python has no arrow-function shortcut for named functions
+(there's `lambda`, later, for tiny anonymous ones only).
+</LangContrast>

@@ -1,3 +1,4 @@
+import { readerPreferences, type ReaderPreferences } from '@/lib/narration/preferences'
 import { eq } from 'drizzle-orm'
 import { db, schema } from '@/db'
 
@@ -26,14 +27,34 @@ export type LearnerProfile = {
   surveyDone?: boolean
 }
 
+/**
+ * "Predict your own failure modes" — the pre-chapter quiz (owner idea, Phase 1;
+ * designed in Phase 3 with the teacher in mind). Declared-layer signal like the
+ * profile: written only by the learner, injected into teacher context for the
+ * chapter it belongs to.
+ */
+export type ChapterPrediction = {
+  /** concept tags the learner expects to stumble on */
+  concepts: string[]
+  /** anything else they suspect, in their own words */
+  note?: string
+  /** ISO timestamp of when the prediction was made */
+  at: string
+}
+
 export type UserSettings = {
+  reader: ReaderPreferences
   theme: ThemeName
   profile: LearnerProfile
+  /** keyed by chapterId */
+  predictions: Record<string, ChapterPrediction>
 }
 
 const DEFAULTS: UserSettings = {
+  reader: readerPreferences(null),
   theme: 'cyber',
   profile: { background: 'js' },
+  predictions: {},
 }
 
 const optionalString = (v: unknown): string | undefined =>
@@ -46,7 +67,23 @@ export async function getUserSettings(userId: string): Promise<UserSettings> {
     .where(eq(schema.users.id, userId))
   const raw = (row?.settings ?? {}) as Partial<UserSettings>
   const p = (raw.profile ?? {}) as Partial<LearnerProfile>
+
+  const predictions: Record<string, ChapterPrediction> = {}
+  if (raw.predictions && typeof raw.predictions === 'object') {
+    for (const [chapterId, v] of Object.entries(raw.predictions)) {
+      const pred = v as Partial<ChapterPrediction>
+      if (Array.isArray(pred?.concepts)) {
+        predictions[chapterId] = {
+          concepts: pred.concepts.filter((c): c is string => typeof c === 'string'),
+          note: optionalString(pred.note),
+          at: typeof pred.at === 'string' ? pred.at : new Date(0).toISOString(),
+        }
+      }
+    }
+  }
+
   return {
+    reader: readerPreferences(raw.reader),
     theme: raw.theme === 'primary' ? 'primary' : DEFAULTS.theme,
     profile: {
       background: typeof p.background === 'string' ? p.background : DEFAULTS.profile.background,
@@ -56,17 +93,26 @@ export async function getUserSettings(userId: string): Promise<UserSettings> {
       hintStyle: optionalString(p.hintStyle),
       surveyDone: p.surveyDone === true ? true : undefined,
     },
+    predictions,
   }
 }
 
 export async function updateUserSettings(
   userId: string,
-  patch: { theme?: ThemeName; profile?: Partial<LearnerProfile> }
+  patch: {
+    reader?: Partial<ReaderPreferences>
+    theme?: ThemeName
+    profile?: Partial<LearnerProfile>
+    /** merged per chapter — a new prediction replaces that chapter's, others stay */
+    predictions?: Record<string, ChapterPrediction>
+  }
 ): Promise<UserSettings> {
   const current = await getUserSettings(userId)
   const next: UserSettings = {
+    reader: readerPreferences({ ...current.reader, ...patch.reader }),
     theme: patch.theme ?? current.theme,
     profile: { ...current.profile, ...patch.profile },
+    predictions: { ...current.predictions, ...patch.predictions },
   }
   await db.update(schema.users).set({ settings: next }).where(eq(schema.users.id, userId))
   return next

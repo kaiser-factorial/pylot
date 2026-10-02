@@ -1,0 +1,9 @@
+# Capstone: the flight-log processor
+
+The whole chapter in one pipeline: write structured data as JSON to a file, read it back
+safely, validate it (raising early on bad input), analyze it, and write a summary. This is
+the shape of real data plumbing — get data in, trust it, transform it, get results out.
+
+Four sections, one workspace. `import json` in section 1 stays imported; the file you write
+is there to read in the next section. Submit runs them all and pinpoints any section that
+needs another pass.

@@ -1,0 +1,48 @@
+# JSON and pathlib
+
+Two stdlib tools you'll use constantly: `json` for structured data, `pathlib` for file paths.
+
+## json
+
+JSON is how structured data travels — configs, API responses, saved state. The `json`
+module converts between JSON text and Python objects, and the mapping is exactly what you'd
+guess: object ↔ dict, array ↔ list, and so on.
+
+```python
+import json
+
+data = {"model": "A320", "seats": 180, "wifi": True}
+text = json.dumps(data)          # dict → JSON string: '{"model": "A320", ...}'
+back = json.loads(text)          # JSON string → dict
+```
+
+- **`json.dumps(obj)`** — "dump string": Python object → JSON text.
+- **`json.loads(text)`** — "load string": JSON text → Python object.
+
+Watch the translations: Python `True`/`False`/`None` become JSON `true`/`false`/`null`, and
+JSON keys are always strings. `json.dumps(data, indent=2)` pretty-prints with indentation.
+
+## pathlib
+
+`pathlib.Path` treats a filesystem path as an object with methods, instead of gluing
+strings together:
+
+```python
+from pathlib import Path
+
+p = Path("logs") / "flight.txt"   # the / operator joins path parts
+p.name                            # 'flight.txt'
+p.suffix                          # '.txt'
+p.stem                            # 'flight'
+```
+
+The `/` operator builds paths safely across operating systems — no manual `"logs" + "/" +
+name`, no wrong-slash bugs. `Path` objects work anywhere a filename string does, including
+`open()`.
+
+<LangContrast lang="js">
+`json.dumps`/`json.loads` are `JSON.stringify`/`JSON.parse` — same job, and `indent=2`
+mirrors the third arg of `JSON.stringify`. The `pathlib` `/` operator is Python's answer to
+Node's `path.join(...)`, but as an operator: `Path("a") / "b" / "c"`. The dict↔object
+mapping is exactly like JS, with the note that JSON keys are always strings on both sides.
+</LangContrast>

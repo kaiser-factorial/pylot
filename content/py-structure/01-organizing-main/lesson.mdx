@@ -1,0 +1,42 @@
+# Organizing a script: the `main()` pattern
+
+As a script grows, "one long wall of top-level code" gets hard to read and impossible to
+reuse. The fix is structure: break the work into named functions, and add a small `main()`
+that orchestrates them.
+
+```python
+def load(path):
+    ...
+
+def summarize(rows):
+    ...
+
+def main():
+    rows = load("data.csv")
+    print(summarize(rows))
+
+if __name__ == "__main__":
+    main()
+```
+
+Two things are happening:
+
+**Functions carry the logic; `main()` composes them.** Each function does one job and can be
+tested on its own. `main()` reads like a table of contents for the program.
+
+**`if __name__ == "__main__":` guards the entry point.** You met `__name__` back in Ch. 0:
+it's `"__main__"` when the file is *run directly*, but the file's *own name* when it's
+*imported* by another file. So this guard means "run `main()` only when I'm the program being
+executed — not when someone imports me to reuse my functions." Without it, importing your file
+to grab one function would run the whole script as a side effect.
+
+The payoff: the same file is both a runnable program *and* an importable library of functions,
+with no conflict.
+
+<LangContrast lang="js">
+`if __name__ == "__main__":` is Python's `if (require.main === module)` — the "am I the entry
+point or was I imported?" check. The `main()`-plus-guard shape is the same instinct as keeping
+a Node module's side effects behind an entry check so `require()`-ing it stays clean. Defining
+functions and calling `main()` at the bottom mirrors how you'd structure a well-organized JS
+module.
+</LangContrast>

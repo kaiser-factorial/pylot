@@ -96,7 +96,7 @@ own failure modes" quiz before a lesson. **Scope decision (Phase 2, 2026-07-04):
 to Phase 3** — it belongs with the spaced-review slot, and its answers are declared/derived
 teacher-context signal, which is Phase 3's memory work anyway.*
 
-## Phase 3 — Long-form + full vanilla curriculum
+## Phase 3 — Long-form + full vanilla curriculum ✅ (completed 2026-07-05; acceptance automated in `npm run verify:phase3` + `npm run eval:teacher` + `npm run validate:content` — all three green; owner playtest of sectioned capstones + reward + refusal-under-pressure still pending sign-off — see `docs/PHASE4-HANDOFF.md`)
 Sectioned exercises (cumulative namespace, per-section checks/editors, section-aware teacher
 diagnosis). Parsons + capstone (ai_rubric) exercise kinds. Author **Ch. 2–6 in full**.
 Struggle score computation on the attempts log. Reward system: chapter-completion +
@@ -106,8 +106,10 @@ Spaced quick-review at chapter openings.
 **Learner memory layers 2–3 (ADR-006):** derived struggle-by-concept summary
 (`lib/memory/derived.ts` over attempts × concept tags) added to teacher context — enables
 "slicing is your most frequent stumble, want more examples?" grounded in real counts.
-Optional scope: episodic teacher notes with the transparency rules (user-visible/deletable
-panel, capped, no performance claims — those must cite derived numbers).
+~~Optional scope: episodic teacher notes~~ **Owner decision (2026-07-04): episodic notes
+(layer 3) are skipped this phase — revisit in Phase 4** (with the transparency rules:
+user-visible/deletable panel, capped, no performance claims — those must cite derived
+numbers). ADR-006 already says to reassess episodic value after Phase 3 usage.
 
 **Done when:** a capstone reports per-section pass/fail and the teacher pinpoints the failing
 section; reward fires after a struggle-heavy pass and does NOT fire after an easy one

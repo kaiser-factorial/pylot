@@ -1,0 +1,147 @@
+exercises:
+  - id: py-structure/04-asserts-testing/01-write-asserts
+    title: Pin the behavior
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      `triple` is defined. Below it, write three `assert` statements that
+      pin its behavior: `triple(2)` is 6, `triple(0)` is 0, and `triple(-1)`
+      is -3. Then print `tests passed`. If all asserts hold, that's the only
+      output.
+    concepts: [assertions, functions-defining]
+    starter_code: |
+      def triple(n):
+          return n * 3
+
+      # three asserts, then print
+    reference_solution: |
+      def triple(n):
+          return n * 3
+
+      assert triple(2) == 6
+      assert triple(0) == 0
+      assert triple(-1) == -3
+      print("tests passed")
+    checks:
+      - type: stdout
+        equals: "tests passed"
+      - type: ast
+        requires: [Assert]
+        message: "pin the behavior with assert statements"
+    hints:
+      - "Each check is: assert triple(x) == expected."
+      - "If every assert holds, execution reaches the final print."
+
+  - id: py-structure/04-asserts-testing/02-predict-assert
+    title: "Predict: the failing assert"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      A passing assert is silent; a failing one raises AssertionError and
+      stops. Predict the output up to the point it halts, then on its own
+      final line write the exception type that stops it.
+    concepts: [assertions]
+    starter_code: |
+      print("start")
+      assert 2 + 2 == 4
+      print("first ok")
+      assert 2 + 2 == 5
+      print("never gets here")
+    reference_solution: |
+      print("start")
+      assert 2 + 2 == 4
+      print("first ok")
+      assert 2 + 2 == 5
+      print("never gets here")
+    checks:
+      - type: stdout
+        equals: |
+          start
+          first ok
+      - type: exception
+        raises: AssertionError
+    hints:
+      - "The first assert (2+2==4) passes silently, so \"first ok\" prints."
+      - "The second assert (2+2==5) is false — it raises AssertionError and the last print never runs."
+
+  - id: py-structure/04-asserts-testing/03-fix-precondition
+    title: "Fix: guard the assumption"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      `first_item` crashes with an IndexError on an empty list — a confusing
+      failure deep in the function. Add an `assert` at the top that the list
+      is non-empty, with a clear message, so the failure is loud and
+      obvious. The starter calls it on a good list; expected output is `10`.
+    concepts: [assertions, functions-defining]
+    starter_code: |
+      def first_item(items):
+          return items[0]
+
+      print(first_item([10, 20, 30]))
+    reference_solution: |
+      def first_item(items):
+          assert len(items) > 0, "items must not be empty"
+          return items[0]
+
+      print(first_item([10, 20, 30]))
+    checks:
+      - type: stdout
+        equals: "10"
+      - type: ast
+        requires: [Assert]
+        message: "assert the precondition (non-empty) before indexing"
+    hints:
+      - "Before items[0], assert that len(items) > 0 with a message."
+      - "On a good list the assert passes silently and returns items[0]."
+
+  - id: py-structure/04-asserts-testing/04-test-function
+    title: Write a test function
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      `clamp(n, low, high)` is defined (it keeps n within [low, high]). Write
+      a function `test_clamp()` containing three asserts: a value inside the
+      range is unchanged, a value below `low` clamps up, a value above `high`
+      clamps down. Then CALL `test_clamp()` and print `ok`. Expected output:
+      `ok`.
+    concepts: [assertions, functions-defining]
+    starter_code: |
+      def clamp(n, low, high):
+          if n < low:
+              return low
+          if n > high:
+              return high
+          return n
+
+      # def test_clamp(): ...
+      # test_clamp()
+      # print("ok")
+    reference_solution: |
+      def clamp(n, low, high):
+          if n < low:
+              return low
+          if n > high:
+              return high
+          return n
+
+      def test_clamp():
+          assert clamp(5, 0, 10) == 5
+          assert clamp(-3, 0, 10) == 0
+          assert clamp(99, 0, 10) == 10
+
+      test_clamp()
+      print("ok")
+    checks:
+      - type: stdout
+        equals: "ok"
+      - type: function
+        name: test_clamp
+        cases:
+          - args: []
+            expected: null
+      - type: ast
+        requires: [Assert, FunctionDef]
+    hints:
+      - "test_clamp holds three asserts: one in-range (unchanged), one below low, one above high."
+      - "A test function returns nothing; you call it, and if no assert fails, print(\"ok\") runs."

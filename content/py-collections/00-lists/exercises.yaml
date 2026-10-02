@@ -1,0 +1,120 @@
+exercises:
+  - id: py-collections/00-lists/01-manifest
+    title: Build the manifest
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Create a list `manifest` containing the strings `"fuel"`, `"charts"`,
+      `"coffee"` (in that order). Append `"snacks"`, then print the length
+      and the LAST item using a negative index — two prints, so the output is:
+      `4` then `snacks`.
+    concepts: [lists, indexing, printing]
+    starter_code: |
+      # manifest = ...
+    reference_solution: |
+      manifest = ["fuel", "charts", "coffee"]
+      manifest.append("snacks")
+      print(len(manifest))
+      print(manifest[-1])
+    checks:
+      - type: state
+        expr: 'manifest == ["fuel", "charts", "coffee", "snacks"]'
+      - type: stdout
+        equals: |
+          4
+          snacks
+      - type: ast
+        requires: [UnaryOp]
+        message: "use a negative index for the last item, not [3]"
+    hints:
+      - "List literal: manifest = [\"fuel\", \"charts\", \"coffee\"] — then .append(\"snacks\")."
+      - "The last item is manifest[-1], however long the list is."
+
+  - id: py-collections/00-lists/02-predict-indexing
+    title: "Predict: ends and edges"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      Indexing from both ends, popping from the tail. Walk it line by line —
+      remember `.pop()` both removes AND returns.
+    concepts: [lists, indexing]
+    starter_code: |
+      stack = [3, 14, 15, 92, 65]
+      print(stack[1])
+      print(stack[-2])
+      taken = stack.pop()
+      print(taken)
+      print(len(stack))
+    reference_solution: |
+      stack = [3, 14, 15, 92, 65]
+      print(stack[1])
+      print(stack[-2])
+      taken = stack.pop()
+      print(taken)
+      print(len(stack))
+    checks:
+      - type: stdout
+        equals: |
+          14
+          92
+          65
+          4
+    hints:
+      - "stack[1] is the SECOND element — indexing starts at 0."
+      - "After .pop() removes 65, the list is one shorter."
+
+  - id: py-collections/00-lists/03-fix-push
+    title: "Fix: the JS reflexes"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This was written by someone's JavaScript muscle memory (no judgment).
+      Two bugs, both taught in this lesson. Make it print `3` then `True`.
+    concepts: [lists, membership, errors-reading]
+    starter_code: |
+      waypoints = ["KSFO", "KLAX"]
+      waypoints.push("KSAN")
+      print(len(waypoints))
+      print(waypoints.includes("KLAX"))
+    reference_solution: |
+      waypoints = ["KSFO", "KLAX"]
+      waypoints.append("KSAN")
+      print(len(waypoints))
+      print("KLAX" in waypoints)
+    checks:
+      - type: stdout
+        equals: |
+          3
+          True
+      - type: ast
+        requires: [Compare]
+        message: "membership is the `in` operator (a comparison), not a method call"
+    hints:
+      - "Run it and read the error: lists have no .push — Python calls it something else."
+      - "There is no .includes either. Membership is an operator: value in list."
+
+  - id: py-collections/00-lists/04-parsons-boarding
+    title: "Reorder: boarding sequence"
+    kind: parsons
+    difficulty: 2
+    prompt: |
+      These five lines build a passenger list, remove the no-show, and report.
+      Put them in the only order that works — definitions before use,
+      mutations before measurements.
+    concepts: [lists, printing]
+    reference_solution: |
+      passengers = ["ida", "joan", "mary"]
+      passengers.append("annie")
+      no_show = passengers.pop(1)
+      print(f"boarded: {len(passengers)}")
+      print(f"missed the flight: {no_show}")
+    checks:
+      - type: stdout
+        equals: |
+          boarded: 3
+          missed the flight: joan
+      - type: state
+        expr: 'passengers == ["ida", "mary", "annie"]'
+    hints:
+      - "You can't append to a list that doesn't exist yet."
+      - "The pop must happen after the append — check the boarded count."

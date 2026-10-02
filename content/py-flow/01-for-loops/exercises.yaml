@@ -1,0 +1,111 @@
+exercises:
+  - id: py-flow/01-for-loops/01-sum-loop
+    title: Accumulate a total
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Using a for loop (not the built-in `sum`), add up every number in
+      `legs` into a variable `total`, then print it. Output: `1420`.
+      Set `total` to 0 before the loop.
+    concepts: [loops-for, variables]
+    starter_code: |
+      legs = [420, 380, 300, 320]
+      # total = 0
+      # for ...
+    reference_solution: |
+      legs = [420, 380, 300, 320]
+      total = 0
+      for leg in legs:
+          total += leg
+      print(total)
+    checks:
+      - type: state
+        expr: "total == 1420"
+      - type: ast
+        requires: [For, AugAssign]
+        message: "build the total by accumulating in a for loop, not with sum()"
+    hints:
+      - "Start total at 0 before the loop, then add each leg inside."
+      - "total += leg is shorthand for total = total + leg."
+
+  - id: py-flow/01-for-loops/02-predict-range
+    title: "Predict: what range yields"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      `range(start, stop, step)` has an EXCLUSIVE stop, just like slicing.
+      Predict every line this loop prints (one number per line).
+    concepts: [loops-for, range]
+    starter_code: |
+      for i in range(1, 9, 3):
+          print(i)
+    reference_solution: |
+      for i in range(1, 9, 3):
+          print(i)
+    checks:
+      - type: stdout
+        equals: |
+          1
+          4
+          7
+    hints:
+      - "Start at 1, step by 3: 1, 4, 7 — the next would be 10, but stop (9) is exclusive."
+
+  - id: py-flow/01-for-loops/03-fix-range-loop
+    title: "Fix: the count that starts wrong"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      This should print the seat numbers 1, 2, 3, 4 (one per line) — a real
+      cabin has no row 0. As written it prints 0, 1, 2, 3. Fix the `range`
+      so it yields 1 through 4 inclusive.
+    concepts: [loops-for, range, errors-reading]
+    starter_code: |
+      for seat in range(4):
+          print(seat)
+    reference_solution: |
+      for seat in range(1, 5):
+          print(seat)
+    checks:
+      - type: stdout
+        equals: |
+          1
+          2
+          3
+          4
+      - type: ast
+        requires: [For, Call]
+    hints:
+      - "range(4) is 0,1,2,3. You want to start at 1 — give range a start argument."
+      - "To end at 4, the exclusive stop must be 5: range(1, 5)."
+
+  - id: py-flow/01-for-loops/04-count-matches
+    title: Count the long legs
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      Loop over `distances` and count how many are strictly greater than
+      500, storing the count in `long_haul`. Print it. Output: `3`.
+      (You'll need an `if` inside the loop — that's fine, you just learned it.)
+    concepts: [loops-for, conditionals]
+    starter_code: |
+      distances = [620, 410, 900, 300, 550]
+      # long_haul = 0
+    reference_solution: |
+      distances = [620, 410, 900, 300, 550]
+      long_haul = 0
+      for d in distances:
+          if d > 500:
+              long_haul += 1
+      print(long_haul)
+    checks:
+      - type: state
+        expr: "long_haul == 3"
+      - type: stdout
+        equals: "3"
+      - type: ast
+        requires: [For, If, AugAssign]
+        message: "count by incrementing inside a loop with an if — don't hardcode 3"
+    hints:
+      - "Start long_haul at 0; inside the loop, an if decides whether to add 1."
+      - "620, 900, 550 are the three above 500."

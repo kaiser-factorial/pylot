@@ -1,0 +1,43 @@
+# Raising exceptions
+
+Catching errors is half the story. The other half is *raising* them — signaling that
+something is wrong so a caller can't quietly proceed with bad data.
+
+```python
+def set_age(age):
+    if age < 0:
+        raise ValueError("age cannot be negative")
+    return age
+```
+
+`raise` throws an exception. Reach for a built-in type that fits the problem:
+
+- **`ValueError`** — a value is the wrong *kind* of thing (negative age, empty name).
+- **`TypeError`** — a value is the wrong *type* (got a string, expected a number).
+- **`KeyError` / `IndexError`** — usually Python raises these for you; rarely raised by hand.
+
+The message string is for the human reading the traceback — make it say what went wrong and,
+ideally, what was expected.
+
+**Raise early, on bad input.** A function that validates its arguments and raises
+immediately is far easier to debug than one that limps along and fails three calls later
+with a confusing error. This is the "fail fast" habit:
+
+```python
+def divide(a, b):
+    if b == 0:
+        raise ValueError("cannot divide by zero")
+    return a / b
+```
+
+A raised exception travels up until something catches it (or it reaches the top and prints a
+traceback). So `raise` and `try`/`except` are two ends of the same wire: one signals, the
+other handles.
+
+<LangContrast lang="js">
+`raise` is JS's `throw`, with one sharp difference: JS lets you throw *anything*
+(`throw "oops"`, `throw 42`), but Python raises **exception objects** — `raise
+ValueError("...")`, an instance of a real type. That's a feature: the type carries meaning,
+and callers catch by type. Throwing a bare string, common in sloppy JS, has no Python
+equivalent and no place here.
+</LangContrast>

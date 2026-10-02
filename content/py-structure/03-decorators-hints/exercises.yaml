@@ -1,0 +1,125 @@
+exercises:
+  - id: py-structure/03-decorators-hints/01-predict-decorator
+    title: "Predict: what the decorator adds"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      `@shout` wraps `announce` so its result is upper-cased. Read the
+      decorator, then trace the call. Predict the printed line. (The `wrapper`
+      calls the original function and transforms its result.)
+    concepts: [decorators-reading]
+    starter_code: |
+      def shout(func):
+          def wrapper(name):
+              return func(name).upper()
+          return wrapper
+
+      @shout
+      def announce(name):
+          return f"now boarding {name}"
+
+      print(announce("flight 12"))
+    reference_solution: |
+      def shout(func):
+          def wrapper(name):
+              return func(name).upper()
+          return wrapper
+
+      @shout
+      def announce(name):
+          return f"now boarding {name}"
+
+      print(announce("flight 12"))
+    checks:
+      - type: stdout
+        equals: "NOW BOARDING FLIGHT 12"
+    hints:
+      - "@shout replaces announce with wrapper, which calls the original then .upper()s it."
+      - "So announce(\"flight 12\") returns the upper-cased boarding message."
+
+  - id: py-structure/03-decorators-hints/02-read-hints
+    title: "Read it: what the hints say"
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Reading practice for type hints. Given:
+      ```
+      def scale(values: list[int], factor: float = 2.0) -> list[float]:
+          ...
+      ```
+      Set `param_type` to the annotated type of `factor` (as a string, e.g.
+      `"int"`), and `return_type` to what the function is annotated to return
+      (as a string, exactly as written after the `->`). Expected values:
+      `"float"` and `"list[float]"`.
+    concepts: [type-hints]
+    starter_code: |
+      # param_type = "..."
+      # return_type = "..."
+    reference_solution: |
+      param_type = "float"
+      return_type = "list[float]"
+    checks:
+      - type: state
+        expr: 'param_type == "float"'
+        message: "factor is annotated with which type?"
+      - type: state
+        expr: 'return_type == "list[float]"'
+        message: "what comes after the -> ?"
+    hints:
+      - "factor: float = 2.0 — the type is between the colon and the = default."
+      - "The return type is whatever follows the -> arrow, here list[float]."
+
+  - id: py-structure/03-decorators-hints/03-predict-hints-ignored
+    title: "Predict: hints don't enforce"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      Type hints are documentation, NOT runtime checks — Python ignores them.
+      This function is hinted to take an `int`, but it's called with a string,
+      and `*` works on strings too. Predict what prints (no error occurs).
+    concepts: [type-hints]
+    starter_code: |
+      def repeat(text: str, n: int) -> str:
+          return text * n
+
+      print(repeat("ab", 3))
+    reference_solution: |
+      def repeat(text: str, n: int) -> str:
+          return text * n
+
+      print(repeat("ab", 3))
+    checks:
+      - type: stdout
+        equals: "ababab"
+    hints:
+      - "\"ab\" * 3 repeats the string three times — hints don't change how * behaves."
+      - "Python never checks the hints at runtime, so nothing raises."
+
+  - id: py-structure/03-decorators-hints/04-fix-hint-syntax
+    title: "Fix: the annotation in the wrong place"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This tries to annotate the return type with a colon instead of the
+      `->` arrow, which is a SyntaxError. Fix the return annotation to use
+      `->`. The function should still return the doubled value; expected
+      output is `10`.
+    concepts: [type-hints, errors-reading]
+    starter_code: |
+      def double(n: int): int
+          return n * 2
+
+      print(double(5))
+    reference_solution: |
+      def double(n: int) -> int:
+          return n * 2
+
+      print(double(5))
+    checks:
+      - type: stdout
+        equals: "10"
+      - type: ast
+        requires: [FunctionDef]
+    hints:
+      - "A return type is annotated with -> before the colon: def double(n: int) -> int:."
+      - "The parameter hint (n: int) was fine; only the return annotation needed the arrow."

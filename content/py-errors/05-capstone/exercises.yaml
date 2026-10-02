@@ -1,0 +1,113 @@
+exercises:
+  - id: py-errors/05-capstone/01-flight-log
+    title: "Capstone: the flight-log processor"
+    kind: capstone
+    difficulty: 4
+    prompt: |
+      Build a small data pipeline: write JSON to a file, read it back safely,
+      validate it, analyze it, and report. Names and the imported `json`
+      module carry forward between sections.
+    concepts: [files-io, json-data, try-except, raising, loops-for]
+    sections:
+      - id: write
+        title: save the log as JSON
+        instructions: |
+          Import `json`. The list `flights` is given. Write it to a file
+          `flights.json` as JSON text (use `json.dumps` and a `with` block).
+        starter_code: |
+          import json
+          flights = [
+              {"code": "AA1", "delay": 0},
+              {"code": "BA2", "delay": 15},
+              {"code": "CX4", "delay": 0},
+          ]
+          # with open("flights.json", "w") as f: ...
+        reference_solution: |
+          import json
+          flights = [
+              {"code": "AA1", "delay": 0},
+              {"code": "BA2", "delay": 15},
+              {"code": "CX4", "delay": 0},
+          ]
+          with open("flights.json", "w") as f:
+              f.write(json.dumps(flights))
+        checks:
+          - type: state
+            expr: "json.loads(open('flights.json').read()) == flights"
+            message: "flights.json holds the JSON-encoded list"
+          - type: ast
+            requires: [With]
+            message: "write the file inside a `with` block"
+
+      - id: load
+        title: read it back and validate
+        instructions: |
+          Read `flights.json` back and parse it into `loaded` with
+          `json.loads`. Then fail fast: if `loaded` is empty, `raise` a
+          `ValueError("no flights to process")`. (It isn't empty here, so no
+          error fires — but the guard belongs in real code.)
+        starter_code: |
+          # with open("flights.json", "r") as f: ...
+          # loaded = ...
+          # if not loaded: raise ...
+        reference_solution: |
+          with open("flights.json", "r") as f:
+              loaded = json.loads(f.read())
+          if len(loaded) == 0:
+              raise ValueError("no flights to process")
+        checks:
+          - type: state
+            expr: "loaded == flights"
+            message: "loaded is the parsed list, equal to the original"
+          - type: ast
+            requires: [Raise]
+            message: "guard the empty case with a raise"
+
+      - id: analyze
+        title: count the on-time flights
+        instructions: |
+          Loop over `loaded` and count how many flights have a `delay` of 0
+          into `on_time`. Set `total` to the number of flights. Read the
+          delay with `flight["delay"]`.
+        starter_code: |
+          # on_time = 0
+          # for flight in loaded: ...
+          # total = ...
+        reference_solution: |
+          on_time = 0
+          for flight in loaded:
+              if flight["delay"] == 0:
+                  on_time += 1
+          total = len(loaded)
+        checks:
+          - type: state
+            expr: "on_time == 2 and total == 3"
+            message: "two of the three flights have delay 0"
+          - type: ast
+            requires: [For, If]
+            message: "count with a loop and an if"
+
+      - id: report
+        title: write and print the summary
+        instructions: |
+          Build a dict `summary` with keys `total` and `on_time` (from your
+          values), write it to `summary.json` as JSON, then print exactly
+          `2/3 on time` using the counts (not hardcoded).
+        starter_code: |
+          # summary = {"total": total, "on_time": on_time}
+          # with open("summary.json", "w") as f: ...
+          # print(f"{on_time}/{total} on time")
+        reference_solution: |
+          summary = {"total": total, "on_time": on_time}
+          with open("summary.json", "w") as f:
+              f.write(json.dumps(summary))
+          print(f"{on_time}/{total} on time")
+        checks:
+          - type: stdout
+            equals: "2/3 on time"
+          - type: state
+            expr: "json.loads(open('summary.json').read()) == {'total': 3, 'on_time': 2}"
+            message: "summary.json holds the total and on_time counts"
+        hints:
+          - "summary = {\"total\": total, \"on_time\": on_time}, then json.dumps it to the file."
+          - "The printed line uses the variables: f\"{on_time}/{total} on time\"."

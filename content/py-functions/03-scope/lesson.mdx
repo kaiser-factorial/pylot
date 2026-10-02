@@ -1,0 +1,51 @@
+# Scope
+
+A variable created *inside* a function is **local** — it exists only while that function
+runs, and the outside world never sees it.
+
+```python
+def compute():
+    result = 42        # local to compute
+    return result
+
+compute()
+print(result)          # NameError: 'result' is not defined out here
+```
+
+Code inside a function *can read* variables from the enclosing (module) scope:
+
+```python
+tax_rate = 0.08
+def with_tax(price):
+    return price * (1 + tax_rate)   # reads the outer tax_rate — fine
+```
+
+But **assigning** a name inside a function makes it local, even if a same-named variable
+exists outside. This is the classic surprise:
+
+```python
+count = 0
+def bump():
+    count = count + 1   # UnboundLocalError: `count` is local here (you assigned it),
+    return count         # but you read it before assigning
+
+bump()
+```
+
+Python's lookup order is **LEGB**: Local, then Enclosing function, then Global (module),
+then Built-in. A bare read walks outward through those. A bare *assignment* always writes
+to Local. The clean fix is almost never `global` — it's to pass values in as arguments and
+return results out, so functions stay self-contained.
+
+**Shadowing**: a local (or parameter) with the same name as an outer variable *hides* the
+outer one inside the function. Usually harmless, occasionally the source of a baffling bug
+when you meant to touch the outer one.
+
+<LangContrast lang="js">
+Same "assignment makes it local" rule as JS `let`/`var` inside a function — but Python has
+no declaration keyword, so the localness is *implicit*: writing `count = ...` inside a
+function silently shadows the outer `count`, and reading it first gives `UnboundLocalError`
+(JS would give you the outer value or `undefined` depending on hoisting). The fix is the
+same good habit in both languages: prefer arguments and return values over reaching for
+outer state.
+</LangContrast>

@@ -1,0 +1,36 @@
+# enumerate and zip
+
+Two built-ins kill the two most common "I need an index" and "I have two lists" loops.
+
+**`enumerate`** hands you the position *and* the item, so you never index by hand:
+
+```python
+for i, code in enumerate(["KSFO", "KLAX", "KSEA"]):
+    print(i, code)          # 0 KSFO / 1 KLAX / 2 KSEA
+```
+
+Each pass, `enumerate` yields a `(index, item)` tuple, which the `for` unpacks into
+`i, code`. Start the count somewhere other than 0 with `enumerate(items, 1)`. This is
+what you want almost every time you were about to write `range(len(items))`.
+
+**`zip`** walks several sequences in lockstep, pairing them up:
+
+```python
+names = ["ada", "grace", "joan"]
+scores = [88, 95, 81]
+for name, score in zip(names, scores):
+    print(f"{name}: {score}")
+```
+
+Each pass yields one item from each list, as a tuple, unpacked into `name, score`. If
+the lists differ in length, `zip` stops at the shortest — no error, it just quits early.
+
+Both are **lazy** (they generate on demand), so wrap them in `list()` if you want to see
+or store the pairs directly.
+
+<LangContrast lang="js">
+`enumerate` is `.entries()` — `for (const [i, x] of arr.entries())` becomes
+`for i, x in enumerate(arr)`. `zip` is JS's missing built-in: pairing two arrays in JS
+means `a.map((x, i) => [x, b[i]])`; Python just writes `zip(a, b)`. Both give you
+tuples you destructure in the loop header, exactly like array destructuring.
+</LangContrast>

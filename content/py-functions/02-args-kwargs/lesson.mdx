@@ -1,0 +1,45 @@
+# *args and **kwargs
+
+Sometimes a function should accept *any number* of arguments. Two special parameters do
+that — and you'll see them in nearly every library signature, so learn to read them even
+before you write them.
+
+**`*args`** collects extra *positional* arguments into a **tuple**:
+
+```python
+def total(*numbers):
+    return sum(numbers)
+
+total(1, 2, 3)          # numbers is (1, 2, 3) → 6
+total(10, 20)           # numbers is (10, 20)  → 30
+```
+
+**`**kwargs`** collects extra *keyword* arguments into a **dict**:
+
+```python
+def describe(**facts):
+    return facts
+
+describe(model="A320", seats=180)    # {'model': 'A320', 'seats': 180}
+```
+
+The names `args` and `kwargs` are just convention — it's the `*` and `**` that do the
+work. `*` means "pack the loose positional args into a tuple"; `**` means "pack the loose
+keyword args into a dict". A function can take normal parameters first, then `*args`, then
+`**kwargs`:
+
+```python
+def log(level, *messages, **meta):
+    ...
+```
+
+The mirror image is **unpacking** at the call site: `*` spreads a list into positional
+arguments, `**` spreads a dict into keyword arguments — `func(*my_list, **my_dict)`.
+
+<LangContrast lang="js">
+`*args` is the rest parameter `function total(...numbers)`, and calling with `*my_list`
+is the spread `total(...myList)` — same idea, `*` instead of `...`. `**kwargs` has no
+JS equivalent because JS has no keyword arguments; it's roughly "collect the leftover
+options object". When you read `model.fit(*args, **kwargs)` in library code, it means
+"pass through whatever I was given" — the passthrough pattern.
+</LangContrast>

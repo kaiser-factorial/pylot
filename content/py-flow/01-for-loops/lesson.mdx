@@ -1,0 +1,44 @@
+# For loops
+
+A `for` loop walks the items of a collection, one at a time. There's no counter to
+manage — you name the item, Python hands them to you.
+
+```python
+for code in ["KSFO", "KLAX", "KSEA"]:
+    print(code)
+```
+
+That's it: `for <name> in <iterable>:`, colon, indented body. `code` takes each value
+in turn. Lists, tuples, sets, strings (character by character), and dict views all
+iterate. Looping a dict directly gives its **keys**; `.items()` gives key/value pairs
+you can unpack:
+
+```python
+for role, person in crew.items():
+    print(f"{role}: {person}")
+```
+
+When you genuinely need numbers to count with, `range` generates them — lazily, without
+building a list:
+
+```python
+range(5)        # 0, 1, 2, 3, 4       — stop is exclusive (like slicing)
+range(2, 6)     # 2, 3, 4, 5          — start, stop
+range(0, 10, 2) # 0, 2, 4, 6, 8       — start, stop, step
+```
+
+To accumulate a result, set up a variable *before* the loop and update it inside:
+
+```python
+total = 0
+for n in [10, 20, 30]:
+    total = total + n     # or: total += n
+```
+
+<LangContrast lang="js">
+This is `for...of`, not the C-style `for (let i = 0; i < n; i++)` — Python has no
+three-part loop at all. Iterate the collection directly (`for x in items`) instead of
+indexing by counter. When you truly need indices, `range(len(items))` is the escape
+hatch — but reaching for it is usually a sign you want `enumerate` (next lesson but
+one). `range`'s exclusive stop matches JS `Array.from` less than it matches slicing.
+</LangContrast>

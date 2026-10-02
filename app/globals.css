@@ -135,6 +135,11 @@
   --syn-constant: #ff6b76; /* True/False/None */
   --syn-operator: #93a89c;
   --syn-punct: #7d8f85;
+
+  /* TTS read-aloud (spike): active-sentence highlight — green wash behind
+     light-on-dark prose. Background only, so it stays inside .readable rules. */
+  --tts-highlight: rgba(16, 255, 80, 0.18);
+  --tts-chunk-highlight: rgba(16, 255, 80, 0.38);
 }
 
 /* -------------------------------------------------------------- primary --- */
@@ -210,6 +215,10 @@
   --syn-constant: #eb1a26;
   --syn-operator: #111111;
   --syn-punct: #555555;
+
+  /* TTS read-aloud (spike): soft yellow wash behind dark-on-white prose. */
+  --tts-highlight: #fff2a8;
+  --tts-chunk-highlight: #ffd600;
 }
 
 @layer base {
@@ -246,6 +255,32 @@
   text-shadow: none !important;
   animation: none !important;
   filter: none !important;
+}
+
+/* TTS read-aloud: sentence context with a stronger estimated word chunk. Background only —
+   safe inside .readable, where text-shadow/animation/filter are stripped. */
+.tts-sent {
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+.tts-sent.tts-active {
+  background-color: var(--tts-highlight);
+  box-shadow: 0 0 0 2px var(--tts-highlight);
+}
+
+.tts-chunk {
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.tts-chunk.tts-chunk-active {
+  background-color: var(--tts-chunk-highlight);
+  box-shadow: 0 2px 0 var(--pane-title);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tts-sent { transition: none; }
 }
 
 /* Panel title glow (cyber) / plain uppercase (primary) */

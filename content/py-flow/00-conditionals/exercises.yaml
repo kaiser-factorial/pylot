@@ -1,0 +1,131 @@
+exercises:
+  - id: py-flow/00-conditionals/01-classify
+    title: Classify the reading
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Given `temp`, print exactly one word: `hot` if temp is above 30,
+      `cold` if below 10, otherwise `mild`. With the given value (22) it
+      should print `mild`.
+    concepts: [conditionals]
+    starter_code: |
+      temp = 22
+      # if / elif / else
+    reference_solution: |
+      temp = 22
+      if temp > 30:
+          print("hot")
+      elif temp < 10:
+          print("cold")
+      else:
+          print("mild")
+    checks:
+      - type: stdout
+        equals: "mild"
+      - type: ast
+        requires: [If]
+        message: "use an if/elif/else, not a precomputed answer"
+    hints:
+      - "Three branches: if temp > 30, elif temp < 10, else."
+      - "Each branch body is indented under its colon."
+
+  - id: py-flow/00-conditionals/02-predict-elif
+    title: "Predict: first branch wins"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      Only the FIRST true branch runs; the rest are skipped even if they'd
+      also be true. Trace each value through the chain and predict all three
+      lines.
+    concepts: [conditionals, comparison]
+    starter_code: |
+      for score in [95, 60, 30]:
+          if score >= 90:
+              print("A")
+          elif score >= 50:
+              print("pass")
+          else:
+              print("retry")
+    reference_solution: |
+      for score in [95, 60, 30]:
+          if score >= 90:
+              print("A")
+          elif score >= 50:
+              print("pass")
+          else:
+              print("retry")
+    checks:
+      - type: stdout
+        equals: |
+          A
+          pass
+          retry
+    hints:
+      - "60 is >= 50 but NOT >= 90, so it takes the elif branch."
+      - "Each score prints exactly one word."
+
+  - id: py-flow/00-conditionals/03-fix-operators
+    title: "Fix: the wrong operators"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This is C/JavaScript reflexes in Python clothing. It should print
+      `cleared` only when altitude is between 1000 and 40000 AND gear is not
+      down. Fix the logical operators and the branch keyword. With the given
+      values it prints `cleared`.
+    concepts: [conditionals, errors-reading]
+    starter_code: |
+      altitude = 12000
+      gear_down = False
+      if altitude > 1000 && altitude < 40000 and gear_down != True:
+          print("cleared")
+      else if altitude == 0:
+          print("parked")
+    reference_solution: |
+      altitude = 12000
+      gear_down = False
+      if altitude > 1000 and altitude < 40000 and gear_down != True:
+          print("cleared")
+      elif altitude == 0:
+          print("parked")
+    checks:
+      - type: stdout
+        equals: "cleared"
+      - type: ast
+        requires: [BoolOp]
+        message: "combine the conditions with Python's `and`"
+    hints:
+      - "Python has no && — the word is `and`. Same for || (or) and ! (not)."
+      - "`else if` isn't valid Python. It's one word: elif."
+
+  - id: py-flow/00-conditionals/04-blank-chain
+    title: "Fill in: the fare band"
+    kind: fill-blank
+    difficulty: 2
+    prompt: |
+      Fill the two blanks (`___`) so the chain prints the right fare band.
+      A distance of 250 should print `regional`. The bands: under 100 →
+      `local`, 100 to under 800 → `regional`, otherwise → `long-haul`.
+    concepts: [conditionals]
+    starter_code: |
+      distance = 250
+      if distance < 100:
+          print("local")
+      ___ distance < 800:
+          print("___")
+      else:
+          print("long-haul")
+    reference_solution: |
+      distance = 250
+      if distance < 100:
+          print("local")
+      elif distance < 800:
+          print("regional")
+      else:
+          print("long-haul")
+    checks:
+      - type: stdout
+        equals: "regional"
+    hints:
+      - "The middle branch keyword is elif."
+      - "250 is under 800 but not under 100 — which band is that?"

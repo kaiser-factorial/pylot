@@ -1,0 +1,116 @@
+exercises:
+  - id: py-flow/05-capstone/01-text-stats
+    title: "Capstone: the text-stats tool"
+    kind: capstone
+    difficulty: 3
+    prompt: |
+      Build a small word-frequency analyzer, one section at a time. Names
+      defined in earlier sections stay available, so `words` from section 1
+      is there in every later section.
+    concepts: [loops-for, conditionals, comprehensions, dicts]
+    sections:
+      - id: tokenize
+        title: split into words
+        instructions: |
+          The variable `text` is given. Build `words`: the text lowercased
+          and split on whitespace into a list. (`str.split()` with no
+          argument splits on any whitespace.) Expected: 12 words.
+        starter_code: |
+          text = "To be or not to be that is the question to be"
+          # words = ...
+        reference_solution: |
+          text = "To be or not to be that is the question to be"
+          words = text.lower().split()
+        checks:
+          - type: state
+            expr: "words == ['to', 'be', 'or', 'not', 'to', 'be', 'that', 'is', 'the', 'question', 'to', 'be']"
+            message: "words is the lowercased text split into a list"
+
+      - id: tally
+        title: count the frequencies
+        instructions: |
+          Loop over `words` and build a dict `freq` mapping each word to how
+          many times it appears. `freq.get(w, 0) + 1` is the clean way to
+          add one whether or not the key exists yet. Then set `total` to the
+          word count and `distinct` to the number of unique words.
+        starter_code: |
+          # freq = {}
+          # for w in words: ...
+          # total = ...
+          # distinct = ...
+        reference_solution: |
+          freq = {}
+          for w in words:
+              freq[w] = freq.get(w, 0) + 1
+          total = len(words)
+          distinct = len(freq)
+        checks:
+          - type: state
+            expr: "freq['to'] == 3 and freq['be'] == 3 and freq['or'] == 1"
+            message: "freq counts each word's occurrences"
+          - type: state
+            expr: "total == 12 and distinct == 8"
+            message: "total is the word count; distinct is the number of unique words"
+          - type: ast
+            requires: [For]
+            message: "tally with a loop"
+
+      - id: analysis
+        title: find the notable words
+        instructions: |
+          Two results from what you've built:
+            - `repeated`: a list of the words that appear more than once,
+              using a comprehension over `freq`. (Order follows first
+              appearance: `['to', 'be']`.)
+            - `longest`: the single longest word in `words`, found with a
+              loop (start from an empty string and keep the longer one).
+        starter_code: |
+          # repeated = [ ... for w in freq if ... ]
+          # longest = ""
+          # for w in words: ...
+        reference_solution: |
+          repeated = [w for w in freq if freq[w] > 1]
+          longest = ""
+          for w in words:
+              if len(w) > len(longest):
+                  longest = w
+        checks:
+          - type: state
+            expr: "repeated == ['to', 'be']"
+            message: "repeated lists the words with a count above 1, in first-seen order"
+          - type: state
+            expr: "longest == 'question'"
+            message: "longest is the longest word in the text"
+          - type: ast
+            requires: [ListComp, For]
+            message: "build repeated with a comprehension and longest with a loop"
+
+      - id: report
+        title: print the summary
+        instructions: |
+          Print exactly these four lines, using the names you built (join the
+          repeated list with ", "):
+          ```
+          total words: 12
+          distinct words: 8
+          repeated: to, be
+          longest word: question
+          ```
+        starter_code: |
+          # print(f"total words: {total}")
+          # ...
+        reference_solution: |
+          print(f"total words: {total}")
+          print(f"distinct words: {distinct}")
+          print(f"repeated: {', '.join(repeated)}")
+          print(f"longest word: {longest}")
+        checks:
+          - type: stdout
+            equals: |
+              total words: 12
+              distinct words: 8
+              repeated: to, be
+              longest word: question
+        hints:
+          - "Join the repeated list into text with ', '.join(repeated)."
+          - "Each line is one f-string print, using total, distinct, repeated, longest."

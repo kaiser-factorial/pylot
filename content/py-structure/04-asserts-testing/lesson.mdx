@@ -1,0 +1,59 @@
+# Asserts and a taste of testing
+
+Testing your own code is the autonomy skill — the difference between *hoping* it works and
+*knowing* it does. It starts with one keyword.
+
+## assert
+
+`assert` checks that a condition is true. If it is, nothing happens; if it isn't, it raises
+`AssertionError` and stops — a loud, immediate signal that a assumption you relied on is false.
+
+```python
+def average(nums):
+    assert len(nums) > 0, "average needs at least one number"
+    return sum(nums) / len(nums)
+```
+
+The optional message after the comma is shown in the error. Use `assert` for things that
+should *never* happen if your code is correct — internal sanity checks, preconditions. (It's
+for catching *your* bugs, not for validating user input; raise a real exception for that, as
+in Ch. 5.)
+
+## Testing with assert
+
+The simplest test is an `assert` that pins down expected behavior:
+
+```python
+def add(a, b):
+    return a + b
+
+assert add(2, 3) == 5
+assert add(-1, 1) == 0
+print("all tests passed")
+```
+
+If any assert fails, you find out exactly which expectation broke, immediately. Run this after
+every change and you've built a safety net.
+
+## pytest (the concept)
+
+Real projects use **pytest**: you write functions named `test_*` full of asserts, and running
+`pytest` finds and runs them all, reporting passes and failures with nice diffs.
+
+```python
+def test_add():
+    assert add(2, 3) == 5
+    assert add(0, 0) == 0
+```
+
+You won't run `pytest` in this browser app, but the mental model matters: *tests are just
+functions full of asserts, collected and run by a tool.* Writing them is how you stop
+re-checking your work by hand — and how you trust code you'll change again next week.
+
+<LangContrast lang="js">
+`assert x == y` is Node's `assert.strictEqual(x, y)` or a bare `console.assert`. `pytest`'s
+`test_*` convention plays the role of Jest/Mocha's `test(...)`/`it(...)` blocks — same idea
+(named tests, a runner that collects them), less ceremony: a plain function named `test_thing`
+with `assert` statements, no `expect(...).toBe(...)` wrapper. The habit is identical: pin
+behavior with tests, run them after every change.
+</LangContrast>

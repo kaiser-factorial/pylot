@@ -1,0 +1,34 @@
+# Sets
+
+A set is an **unordered** collection of **unique** elements. Its two superpowers:
+instant deduplication, and fast "is this in here?" membership.
+
+```python
+seen = {"KSFO", "KLAX", "KSFO"}     # {'KSFO', 'KLAX'} — duplicate collapses
+"KLAX" in seen                       # True, and fast
+unique = set([1, 1, 2, 3, 3, 3])     # {1, 2, 3} — dedupe any list
+```
+
+Curly braces build a set — *except* `{}` is an empty **dict** (Python had dicts
+first). For an empty set you must write `set()`.
+
+Sets aren't indexed (`seen[0]` is an error) — there's no order to index into. What
+you get instead is set algebra, straight from math:
+
+```python
+a = {1, 2, 3}
+b = {2, 3, 4}
+a | b     # {1, 2, 3, 4}   union       — in either
+a & b     # {2, 3}         intersection — in both
+a - b     # {1}            difference   — in a but not b
+```
+
+Reach for a set when you care about *membership or uniqueness* and not about order
+or position. Reach for a list when order matters.
+
+<LangContrast lang="js">
+JS has `Set` too, but it's an object you poke with `.add()` / `.has()`. Python makes
+it a first-class literal with operators: dedupe is `set(arr)` instead of
+`[...new Set(arr)]`, membership is `x in s` instead of `s.has(x)`, and `a & b` /
+`a | b` / `a - b` are built in — in JS you'd hand-roll those.
+</LangContrast>

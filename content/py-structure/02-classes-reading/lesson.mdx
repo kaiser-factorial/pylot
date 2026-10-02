@@ -1,0 +1,43 @@
+# Classes, at reading level
+
+You don't need to *design* class hierarchies to use Python — but you do need to *read* them,
+because `class Net(nn.Module)` and `self` are everywhere in ML code. This lesson is about
+recognizing the shapes, not OOP theory.
+
+A **class** is a template that bundles data and the functions that work on it:
+
+```python
+class Plane:
+    def __init__(self, model, seats):
+        self.model = model          # store data on the instance
+        self.seats = seats
+
+    def describe(self):
+        return f"{self.model} ({self.seats} seats)"
+
+a320 = Plane("A320", 180)           # make an instance (calls __init__)
+a320.describe()                     # "A320 (180 seats)"
+a320.seats                          # 180
+```
+
+Read it piece by piece:
+
+- **`__init__`** is the constructor — it runs when you create an instance (`Plane(...)`). It
+  sets up the instance's data.
+- **`self`** is the instance itself, passed automatically as the first parameter of every
+  method. `self.model = model` stores a value *on this particular plane*. Inside methods you
+  reach the instance's data through `self`.
+- **A method** is just a function defined inside the class; the first parameter is always
+  `self`. You call it as `a320.describe()` — Python passes `a320` in as `self` for you.
+
+That's 90% of what you'll read. When you see `class Net(nn.Module):` later, you'll recognize
+it: `Net` is a new class that *builds on* `nn.Module` (the parentheses mean "inherits from"),
+`__init__` sets it up, and `self` is how each network reaches its own layers.
+
+<LangContrast lang="js">
+Very close to JS `class` with `constructor` and `this`: `__init__` is the `constructor`, and
+`self` is `this` — except Python makes `self` an **explicit** first parameter of every method
+(you see it in the signature; JS's `this` is implicit). `self.model = model` is
+`this.model = model`. Creating an instance drops the `new`: `Plane("A320", 180)`, not
+`new Plane(...)`. Inheritance's `class Net(nn.Module)` is `class Net extends nn.Module`.
+</LangContrast>

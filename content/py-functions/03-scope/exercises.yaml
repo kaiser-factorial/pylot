@@ -1,0 +1,158 @@
+exercises:
+  - id: py-functions/03-scope/01-predict-local
+    title: "Predict: reading outward (LEGB)"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      A function can READ a module-level variable, and it has its own locals.
+      Reassigning a local can't change the outer one. Trace the values and
+      predict all three printed lines. (Trying to read `inner` out here would
+      raise — but this code carefully doesn't, so it runs clean.)
+    concepts: [scope, functions-defining]
+    starter_code: |
+      base = "visible"
+      def show():
+          inner = "hidden"
+          return f"{base} + {inner}"
+
+      print(show())
+      print(base)
+      base = "changed"
+      print(show())
+    reference_solution: |
+      base = "visible"
+      def show():
+          inner = "hidden"
+          return f"{base} + {inner}"
+
+      print(show())
+      print(base)
+      base = "changed"
+      print(show())
+    checks:
+      - type: stdout
+        equals: |
+          visible + hidden
+          visible
+          changed + hidden
+    hints:
+      - "show() reads the current module-level base each time it's called."
+      - "After base is reassigned to \"changed\", the next show() sees the new value."
+
+  - id: py-functions/03-scope/02-fix-unbound
+    title: "Fix: the local that shadowed the global"
+    kind: fix-bug
+    difficulty: 4
+    prompt: |
+      `apply_bonus` tries to read the module-level `total` and add to it, but
+      because it ASSIGNS `total` inside, Python treats `total` as local the
+      whole time — and reading it before assigning raises UnboundLocalError.
+      Fix it the clean way: take the current total as a PARAMETER and return
+      the new value (no reaching for the outer variable). The caller should
+      print `120`.
+    concepts: [scope, errors-reading, functions-defining]
+    starter_code: |
+      total = 100
+      def apply_bonus():
+          total = total + 20
+          return total
+
+      print(apply_bonus())
+    reference_solution: |
+      total = 100
+      def apply_bonus(current):
+          return current + 20
+
+      print(apply_bonus(total))
+    checks:
+      - type: function
+        name: apply_bonus
+        cases:
+          - args: [100]
+            expected: 120
+          - args: [0]
+            expected: 20
+      - type: stdout
+        equals: "120"
+    hints:
+      - "The error: local variable 'total' referenced before assignment — assigning total inside made it local."
+      - "Pass the value in as a parameter and return the result — don't touch the outer total at all."
+
+  - id: py-functions/03-scope/03-predict-shadow
+    title: "Predict: the parameter shadows"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      The parameter `x` shadows the outer `x` INSIDE the function only.
+      Reassigning it there can't affect the module-level `x`. Predict both
+      printed lines.
+    concepts: [scope]
+    starter_code: |
+      x = 10
+      def tweak(x):
+          x = x + 5
+          return x
+
+      print(tweak(100))
+      print(x)
+    reference_solution: |
+      x = 10
+      def tweak(x):
+          x = x + 5
+          return x
+
+      print(tweak(100))
+      print(x)
+    checks:
+      - type: stdout
+        equals: |
+          105
+          10
+    hints:
+      - "Inside tweak, x is the parameter (100), so it returns 105."
+      - "The module-level x was never touched — it's still 10."
+
+  - id: py-functions/03-scope/04-pure-function
+    title: Keep it self-contained
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Write `running_total(previous, amount)` that returns `previous +
+      amount` — a self-contained function that reaches for no outer state.
+      The starter threads it through three calls. Expected: `30`, `55`, `95`.
+    concepts: [scope, functions-defining]
+    starter_code: |
+      # def running_total(previous, amount):
+
+      t = running_total(0, 30)
+      print(t)
+      t = running_total(t, 25)
+      print(t)
+      t = running_total(t, 40)
+      print(t)
+    reference_solution: |
+      def running_total(previous, amount):
+          return previous + amount
+
+      t = running_total(0, 30)
+      print(t)
+      t = running_total(t, 25)
+      print(t)
+      t = running_total(t, 40)
+      print(t)
+    checks:
+      - type: function
+        name: running_total
+        cases:
+          - args: [0, 30]
+            expected: 30
+          - args: [30, 25]
+            expected: 55
+      - type: stdout
+        equals: |
+          30
+          55
+          95
+    hints:
+      - "Everything it needs comes in as a parameter; the answer goes out as a return."
+      - "The caller carries the total between calls in t — the function stays stateless."

@@ -1,0 +1,138 @@
+exercises:
+  - id: py-errors/03-files-with/01-write-read
+    title: Write it, read it back
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Using `with`, write the two lines `alpha` and `bravo` (each followed by
+      a newline) to a file called `log.txt`. Then, in a second `with`, read
+      the whole file back into `content` and print it. Expected output:
+      `alpha` then `bravo`.
+    concepts: [files-io, context-managers]
+    starter_code: |
+      # with open("log.txt", "w") as f:
+      #     ...
+      # with open("log.txt", "r") as f:
+      #     content = ...
+      # print(content)
+    reference_solution: |
+      with open("log.txt", "w") as f:
+          f.write("alpha\n")
+          f.write("bravo\n")
+      with open("log.txt", "r") as f:
+          content = f.read()
+      print(content)
+    checks:
+      - type: stdout
+        equals: |
+          alpha
+          bravo
+      - type: state
+        expr: "content == 'alpha\\nbravo\\n'"
+      - type: ast
+        requires: [With]
+        message: "use `with open(...)` for both the write and the read"
+    hints:
+      - "Open with mode \"w\" to write, then again with \"r\" to read."
+      - "Each f.write needs its own \\n; f.read() returns the whole file as one string."
+
+  - id: py-errors/03-files-with/02-count-lines
+    title: Count the lines
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      A file is pre-written for you (the starter creates `data.txt` with
+      three lines). In your code, open it with `with`, read all lines, and
+      set `line_count` to how many there are, then print it. Expected: `3`.
+    concepts: [files-io, context-managers]
+    starter_code: |
+      with open("data.txt", "w") as f:
+          f.write("north\nsouth\neast\n")
+
+      # open data.txt for reading and count its lines
+      # line_count = ...
+    reference_solution: |
+      with open("data.txt", "w") as f:
+          f.write("north\nsouth\neast\n")
+
+      with open("data.txt", "r") as f:
+          lines = f.readlines()
+      line_count = len(lines)
+      print(line_count)
+    checks:
+      - type: state
+        expr: "line_count == 3"
+      - type: stdout
+        equals: "3"
+      - type: ast
+        requires: [With]
+    hints:
+      - "f.readlines() returns a list — one string per line."
+      - "len() of that list is the line count."
+
+  - id: py-errors/03-files-with/03-fix-no-close
+    title: "Fix: the handle that leaked"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This opens a file manually and forgets to close it — the written text
+      may never flush, so the read-back comes up empty. Rewrite BOTH the
+      write and the read using `with`, so closing is automatic. Expected
+      output: `saved`.
+    concepts: [files-io, context-managers, errors-reading]
+    starter_code: |
+      f = open("out.txt", "w")
+      f.write("saved")
+
+      f2 = open("out.txt", "r")
+      print(f2.read())
+    reference_solution: |
+      with open("out.txt", "w") as f:
+          f.write("saved")
+
+      with open("out.txt", "r") as f2:
+          print(f2.read())
+    checks:
+      - type: stdout
+        equals: "saved"
+      - type: ast
+        requires: [With]
+        message: "use `with` so each file closes (and flushes) automatically"
+    hints:
+      - "Without close(), the write may not be flushed before you read it back."
+      - "with open(...) as f: closes and flushes the moment the block ends."
+
+  - id: py-errors/03-files-with/04-append
+    title: Append, don't overwrite
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      The starter writes `line1` to `roster.txt` with mode `"w"`. Add code
+      that APPENDS `line2` using mode `"a"` (not `"w"`, which would erase
+      line1), then reads and prints the whole file. Expected: `line1` then
+      `line2`.
+    concepts: [files-io, context-managers]
+    starter_code: |
+      with open("roster.txt", "w") as f:
+          f.write("line1\n")
+
+      # append line2 with mode "a", then read and print the whole file
+    reference_solution: |
+      with open("roster.txt", "w") as f:
+          f.write("line1\n")
+
+      with open("roster.txt", "a") as f:
+          f.write("line2\n")
+
+      with open("roster.txt", "r") as f:
+          print(f.read())
+    checks:
+      - type: stdout
+        equals: |
+          line1
+          line2
+      - type: ast
+        requires: [With]
+    hints:
+      - "Mode \"a\" opens for appending — it keeps what's already there."
+      - "Mode \"w\" would truncate line1 first; use \"a\" instead."

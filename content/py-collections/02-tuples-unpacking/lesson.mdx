@@ -1,0 +1,34 @@
+# Tuples and unpacking
+
+A tuple is an **immutable** sequence — a list that can't be changed after it's built.
+Same indexing and slicing, but no `.append`, no item assignment.
+
+```python
+point = (3, 4)          # parentheses (often optional: 3, 4 is also a tuple)
+point[0]                # 3 — indexing works
+point[0] = 9            # TypeError: tuples don't support item assignment
+```
+
+Tuples say "these belong together and won't change" — coordinates, RGB values, a
+function returning two things. The comma is what makes a tuple, not the parentheses:
+`3, 4` is a tuple; `(3)` is just `3` in brackets. A one-element tuple needs the
+trailing comma: `(3,)`.
+
+**Unpacking** is the reason tuples feel great. Assign a tuple to several names at
+once and Python distributes the elements:
+
+```python
+lat, lon = (37.6, -122.4)     # lat = 37.6, lon = -122.4
+a, b = b, a                   # the no-temp-variable swap
+```
+
+The right side of that swap is the tuple `(b, a)`, built first, then unpacked into the
+left — so both updates happen at once. Unpacking works for any sequence, lists
+included, and the counts must match (three names, three values).
+
+<LangContrast lang="js">
+Unpacking is destructuring: `const [lat, lon] = coords`. Python drops the brackets on
+the left — `lat, lon = coords`. The swap idiom `a, b = b, a` is Python's version of
+`[a, b] = [b, a]`. What's genuinely different: tuples are *immutable*, so they're the
+Python answer to "I want an array that can't be mutated" — JS has no built-in for that.
+</LangContrast>

@@ -1,0 +1,71 @@
+# Arguments: defaults and keywords
+
+Parameters can have **default values** — if the caller omits that argument, the default
+is used:
+
+```python
+def climb(rate, target=35000):
+    return f"climbing at {rate} to {target}"
+
+climb(1800)              # uses target=35000
+climb(1800, 41000)      # overrides it
+```
+
+Defaults must come *after* all non-default parameters in the `def` — `def f(a=1, b)` is a
+syntax error.
+
+Callers can pass arguments **by keyword**, naming the parameter explicitly. This makes
+calls readable and lets you skip past defaults or reorder:
+
+```python
+def book(origin, destination, seats=1):
+    ...
+
+book("SFO", "JFK")                       # positional
+book("SFO", "JFK", seats=3)              # keyword for the optional one
+book(destination="JFK", origin="SFO")    # keywords, any order
+```
+
+Positional arguments are matched by position; keyword arguments by name. You can mix
+them, but **positional must come before keyword** in a call: `book("SFO", destination="JFK")`
+is fine, `book(origin="SFO", "JFK")` is a syntax error.
+
+## The one default that bites: mutable defaults
+
+A default value is created **once**, when the function is defined — not fresh on each
+call. That's fine for a number or string, but a **mutable** default (a list or dict) is
+shared across every call that uses it, and it *remembers* changes:
+
+```python
+def add_item(item, bucket=[]):     # ⚠️ the default list is made ONCE
+    bucket.append(item)
+    return bucket
+
+add_item("a")      # ['a']
+add_item("b")      # ['a', 'b']  — same list! not a fresh []
+```
+
+The fix is a fixed idiom: default to `None`, and make the real container inside.
+
+```python
+def add_item(item, bucket=None):
+    if bucket is None:
+        bucket = []                # a fresh list every call
+    bucket.append(item)
+    return bucket
+```
+
+This is one of Python's most famous traps, and it's on every "gotchas" list — recognize
+it on sight.
+
+<LangContrast lang="js">
+Default parameters look identical: `def f(x, target=35000)` ≈ `function f(x, target=35000)`.
+The mutable-default trap above is a Python-only surprise — JS evaluates default expressions
+*fresh on every call*, so `function f(bucket = [])` gives you a new array each time. In
+Python the default is built once at definition, so `bucket=None` + build-inside is the
+required workaround.
+The new superpower is **keyword arguments** — `book(seats=3)` names the parameter at the
+call site. JS has no real equivalent; you'd pass an options object (`book({seats: 3})`)
+and destructure it. Python builds that ergonomics into the language, which is why ML
+library calls are a wall of `name=value` — `model.fit(x, y, epochs=10, batch_size=32)`.
+</LangContrast>

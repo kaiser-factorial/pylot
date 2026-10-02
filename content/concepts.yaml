@@ -22,3 +22,41 @@ concepts:
   - dynamic-typing      # type(), rebinding across types
   - exceptions          # errors as objects: raising, exception types
   - errors-reading      # reading tracebacks bottom-up
+  # --- Ch. 2: collections ---
+  - lists               # literals, append/pop, len, in
+  - tuples              # immutable sequences, single-element comma
+  - dicts               # literals, key access, .get, .items
+  - sets                # dedupe, membership, set ops
+  - indexing            # [i], negative indices, IndexError
+  - slicing             # [start:stop:step], omitted ends, copies (numpy prep)
+  - mutation            # mutate vs rebind, aliasing, .copy()
+  - nesting             # lists of dicts, dicts of lists
+  - unpacking           # a, b = pair; swap; star-unpacking
+  - membership          # in / not in across collections
+  # --- Ch. 3: control flow ---
+  - conditionals        # if/elif/else as statements
+  - loops-for           # for-over-iterables (no C-style counting)
+  - loops-while         # while, loop conditions, infinite-loop hygiene
+  - range               # range(stop/start,stop/step), lazy
+  - enumerate-zip       # enumerate(), zip(), parallel iteration
+  - break-continue      # early exit vs skip
+  - comprehensions      # [x for x in ...], with condition; dict/set comps
+  # --- Ch. 4: functions & scope ---
+  - function-args       # defaults, keyword args, *args/**kwargs
+  - scope               # LEGB-lite, shadowing, locals vs globals
+  - lambdas             # small anonymous functions, sort keys
+  - docstrings          # documenting, help()
+  # --- Ch. 5: errors, files, outside world ---
+  - try-except          # catching, specific exception types, else/finally
+  - raising             # raise, choosing exception types
+  - files-io            # open/read/write
+  - context-managers    # with blocks
+  - json-data           # json.dumps/loads, dict <-> JSON
+  - pathlib             # Path objects over string paths
+  # --- Ch. 6: structuring real programs ---
+  - modules-imports     # import forms, what a module is
+  - main-pattern        # main() + if __name__ == "__main__"
+  - classes-reading     # reading class/self/methods (not OOP design)
+  - decorators-reading  # what @decorator means (reading level)
+  - type-hints          # reading annotations (reading level)
+  - assertions          # assert statements, testing your own code

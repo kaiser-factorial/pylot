@@ -1,0 +1,52 @@
+# Dictionaries
+
+A dict maps **keys** to **values** — the lookup table you reach for constantly.
+
+```python
+plane = {"model": "A320", "seats": 180, "range_km": 6100}
+plane["seats"]              # 180 — look up by key
+plane["crew"] = 6           # add a new key
+plane["seats"] = 186        # reassign an existing one
+len(plane)                  # 4 — number of key/value pairs
+```
+
+Keys are usually strings; values are anything. Looking up a **missing** key with
+`[]` raises `KeyError`. When you're not sure a key exists, `.get` is the safe
+reach — it returns `None` (or a default you supply) instead of raising:
+
+```python
+plane.get("wifi")            # None — no KeyError
+plane.get("wifi", False)     # False — your default
+```
+
+`in` tests **keys**, not values:
+
+```python
+"model" in plane             # True
+"A320" in plane              # False — that's a value, not a key
+```
+
+Three views let you pull out the parts: `plane.keys()`, `plane.values()`, and
+`plane.items()` (key/value pairs). You can hand any of them to `list()` or `len()`
+right now; actually *looping* over them is Ch. 3's job. Since Python 3.7, dicts
+remember insertion order, so those views come out predictably.
+
+**Nesting** is where collections earn their keep: values can be lists, or dicts, or
+lists of dicts. You reach in by stacking the access — one bracket per level:
+
+```python
+fleet = {"a320": [180, 6100], "b737": [160, 5400]}
+fleet["a320"][0]          # 180 — dict key, then list index
+fleet["b737"].append(2)   # mutate the inner list in place
+```
+
+Read `fleet["a320"][0]` left to right: look up `"a320"` (a list), then index `[0]` into
+it. Almost every real dataset you'll touch is nested like this.
+
+<LangContrast lang="js">
+This is a plain object, but sharper. Access is *always* bracket-and-string —
+`plane["seats"]`, never `plane.seats` (dot means method call in Python). A missing key
+**throws** rather than handing you `undefined`; `.get(key)` is how you opt into the
+"give me None instead" behavior. And `"model" in plane` checks keys like JS's
+`in` — but iterating gives you keys directly, no `Object.keys()` ceremony.
+</LangContrast>

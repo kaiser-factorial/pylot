@@ -1,0 +1,152 @@
+exercises:
+  - id: py-errors/02-raising/01-validate
+    title: Guard the input
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Define `withdraw(amount)` that returns the amount, but RAISES a
+      `ValueError` if amount is negative. The starter checks both a good call
+      and (with a try/except) a bad one. Expected output: `50` then `rejected`.
+    concepts: [raising, functions-defining]
+    starter_code: |
+      # def withdraw(amount):
+      #     if amount < 0:
+      #         raise ...
+      #     return amount
+
+      print(withdraw(50))
+      try:
+          withdraw(-5)
+      except ValueError:
+          print("rejected")
+    reference_solution: |
+      def withdraw(amount):
+          if amount < 0:
+              raise ValueError("amount cannot be negative")
+          return amount
+
+      print(withdraw(50))
+      try:
+          withdraw(-5)
+      except ValueError:
+          print("rejected")
+    checks:
+      - type: stdout
+        equals: |
+          50
+          rejected
+      - type: ast
+        requires: [Raise]
+        message: "raise a ValueError when amount is negative"
+    hints:
+      - "Inside the function: if amount < 0, raise ValueError(\"...\")."
+      - "The given try/except turns that raise into the printed 'rejected'."
+
+  - id: py-errors/02-raising/02-raises-check
+    title: Reject the empty name
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Define `require_name(name)` that returns the name, but raises a
+      `ValueError` when the name is an empty string. Do NOT catch it — the
+      checker will confirm that calling it with `""` raises. (The starter
+      calls it with an empty string so the raise fires.)
+    concepts: [raising, functions-defining]
+    starter_code: |
+      # def require_name(name):
+
+      require_name("")
+    reference_solution: |
+      def require_name(name):
+          if name == "":
+              raise ValueError("name is required")
+          return name
+
+      require_name("")
+    checks:
+      - type: exception
+        raises: ValueError
+      - type: ast
+        requires: [Raise]
+    hints:
+      - "if name == \"\": raise ValueError(\"...\")."
+      - "Leave the call uncaught — the check expects the ValueError to escape."
+
+  - id: py-errors/02-raising/03-fix-throw-string
+    title: "Fix: raising a bare string"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This tries to signal an error JavaScript-style, by raising a plain
+      string — which Python won't allow (you can only raise exception
+      objects). Run it, read the TypeError, then raise a real
+      `ValueError` with the same message. The checker confirms it raises
+      ValueError.
+    concepts: [raising, errors-reading]
+    starter_code: |
+      def check_speed(mph):
+          if mph > 200:
+              raise "too fast"
+          return mph
+
+      check_speed(300)
+    reference_solution: |
+      def check_speed(mph):
+          if mph > 200:
+              raise ValueError("too fast")
+          return mph
+
+      check_speed(300)
+    checks:
+      - type: exception
+        raises: ValueError
+      - type: ast
+        requires: [Raise]
+    hints:
+      - "The error: exceptions must derive from BaseException — you can't raise a str."
+      - "Wrap the message in a ValueError: raise ValueError(\"too fast\")."
+
+  - id: py-errors/02-raising/04-raise-and-catch
+    title: The full wire
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      Define `parse_ratio(text)` that splits `text` on `/` and returns the
+      two integers divided (e.g. `"6/3"` → `2.0`), but raises `ValueError`
+      with the message `denominator is zero` when the second number is 0.
+      The starter exercises both paths and prints `2.0` then `caught: denominator
+      is zero`.
+    concepts: [raising, try-except, functions-defining]
+    starter_code: |
+      # def parse_ratio(text):
+      #     a, b = text.split("/")
+      #     ...
+
+      print(parse_ratio("6/3"))
+      try:
+          parse_ratio("5/0")
+      except ValueError as e:
+          print(f"caught: {e}")
+    reference_solution: |
+      def parse_ratio(text):
+          a, b = text.split("/")
+          a, b = int(a), int(b)
+          if b == 0:
+              raise ValueError("denominator is zero")
+          return a / b
+
+      print(parse_ratio("6/3"))
+      try:
+          parse_ratio("5/0")
+      except ValueError as e:
+          print(f"caught: {e}")
+    checks:
+      - type: stdout
+        equals: |
+          2.0
+          caught: denominator is zero
+      - type: ast
+        requires: [Raise, Try]
+    hints:
+      - "Split on \"/\", convert both parts with int(), then guard b == 0 before dividing."
+      - "`except ValueError as e` binds the exception so f\"caught: {e}\" shows its message."

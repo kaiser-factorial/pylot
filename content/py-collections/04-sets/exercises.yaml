@@ -1,0 +1,117 @@
+exercises:
+  - id: py-collections/04-sets/01-dedupe
+    title: Count the distinct
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      `visited` lists airport codes with repeats. Using a set, compute how
+      many DISTINCT airports appear and store it in `distinct_count`, then
+      print it. Output: `3`.
+    concepts: [sets, lists]
+    starter_code: |
+      visited = ["KSFO", "KLAX", "KSFO", "KSEA", "KLAX", "KSFO"]
+      # distinct_count = ...
+    reference_solution: |
+      visited = ["KSFO", "KLAX", "KSFO", "KSEA", "KLAX", "KSFO"]
+      distinct_count = len(set(visited))
+      print(distinct_count)
+    checks:
+      - type: state
+        expr: "distinct_count == 3"
+      - type: stdout
+        equals: "3"
+    hints:
+      - "set(visited) collapses the repeats."
+      - "Then len() of that set is how many distinct codes remain."
+
+  - id: py-collections/04-sets/02-predict-setops
+    title: "Predict: the three operators"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      Union, intersection, difference. Sets have no order, so a set with the
+      same elements is equal regardless of arrangement — these checks compare
+      to a known set with `==`, and each prints a plain `True` or `False`.
+    concepts: [sets, comparison]
+    starter_code: |
+      monday = {"ada", "grace", "joan"}
+      tuesday = {"grace", "joan", "hedy"}
+      print((monday & tuesday) == {"grace", "joan"})
+      print((monday - tuesday) == {"ada"})
+      print(len(monday | tuesday) == 4)
+    reference_solution: |
+      monday = {"ada", "grace", "joan"}
+      tuesday = {"grace", "joan", "hedy"}
+      print((monday & tuesday) == {"grace", "joan"})
+      print((monday - tuesday) == {"ada"})
+      print(len(monday | tuesday) == 4)
+    checks:
+      - type: stdout
+        equals: |
+          True
+          True
+          True
+    hints:
+      - "& keeps who's in BOTH days; - keeps who's in monday but not tuesday."
+      - "The union has ada, grace, joan, hedy — four people."
+
+  - id: py-collections/04-sets/03-fix-empty-set
+    title: "Fix: the empty set that wasn't"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      `flagged` is meant to start as an empty SET, so `.add()` works and the
+      final size is `2`. But `{}` makes an empty dict, and `.add` on a dict
+      raises an AttributeError. Run it, read the error, then build a real
+      empty set. Output: `2`.
+    concepts: [sets, errors-reading]
+    starter_code: |
+      flagged = {}
+      flagged.add("KDEN")
+      flagged.add("KDEN")
+      flagged.add("KJFK")
+      print(len(flagged))
+    reference_solution: |
+      flagged = set()
+      flagged.add("KDEN")
+      flagged.add("KDEN")
+      flagged.add("KJFK")
+      print(len(flagged))
+    checks:
+      - type: stdout
+        equals: "2"
+      - type: state
+        expr: 'flagged == {"KDEN", "KJFK"}'
+    hints:
+      - "Read the error: 'dict' object has no attribute 'add' — {} is a dict, not a set."
+      - "The empty set is spelled set(), not {}. The duplicate KDEN collapses to one."
+
+  - id: py-collections/04-sets/04-common
+    title: On both lists
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Two crews signed the logbook. Find who's on BOTH lists, store the
+      result set in `both`, and print how many people that is. Output: `2`.
+      (The names in `both` can be in any order — that's the point of a set.)
+    concepts: [sets, membership]
+    starter_code: |
+      morning = ["ada", "grace", "joan", "hedy"]
+      evening = ["joan", "mary", "ada", "lise"]
+      # both = ...
+    reference_solution: |
+      morning = ["ada", "grace", "joan", "hedy"]
+      evening = ["joan", "mary", "ada", "lise"]
+      both = set(morning) & set(evening)
+      print(len(both))
+    checks:
+      - type: state
+        expr: 'both == {"ada", "joan"}'
+      - type: stdout
+        equals: "2"
+      - type: ast
+        requires: [BinOp]
+        message: "find the shared names with the intersection operator (&), not by hand"
+    hints:
+      - "Turn each list into a set first, then use the intersection operator."
+      - "set(morning) & set(evening) keeps only the shared names."

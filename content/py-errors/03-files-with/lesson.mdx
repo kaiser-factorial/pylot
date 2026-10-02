@@ -1,0 +1,45 @@
+# Files and the `with` statement
+
+Reading and writing files is one call — `open` — plus a rule about always closing them.
+
+```python
+f = open("notes.txt", "w")     # "w" = write (creates/overwrites)
+f.write("first line\n")
+f.close()                       # you MUST close, or writes may not flush
+```
+
+Forgetting `close()` is easy and costly, so Python gives you the **`with` statement**: it
+opens the file, hands it to you, and **closes it automatically** when the block ends — even
+if an error is raised inside. This is the idiom; use it always.
+
+```python
+with open("notes.txt", "w") as f:
+    f.write("first line\n")
+    f.write("second line\n")
+# file is closed here, automatically
+```
+
+The modes you'll use:
+
+- `"w"` — write, truncating any existing content.
+- `"a"` — append to the end.
+- `"r"` — read (the default).
+
+Reading back:
+
+```python
+with open("notes.txt", "r") as f:
+    content = f.read()          # the whole file as one string
+    # or: f.readlines() for a list of lines, or `for line in f:` to stream
+```
+
+(In this app, files live in an in-browser virtual filesystem — write a file in one part of
+your code and read it back in the next, exactly as you would on disk.)
+
+<LangContrast lang="js">
+No callbacks, no promises, no `fs.readFileSync` ceremony — file I/O is synchronous and
+built in. The star is `with`, which has no direct JS equivalent: it's a *context manager*
+that guarantees cleanup (the closest JS analogy is `try/finally` to close a handle, but
+`with` bakes that guarantee into one line). You'll meet `with` again for locks, database
+connections, and more — it's the general "set up, run, always tear down" tool.
+</LangContrast>

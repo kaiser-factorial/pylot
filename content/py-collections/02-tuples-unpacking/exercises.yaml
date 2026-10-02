@@ -1,0 +1,117 @@
+exercises:
+  - id: py-collections/02-tuples-unpacking/01-swap
+    title: The no-temp swap
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      `high` and `low` got recorded backwards. Swap them in a single line
+      using tuple unpacking (no third variable), then print `high` then
+      `low` so the output is `88` then `54`.
+    concepts: [unpacking, tuples]
+    starter_code: |
+      high = 54
+      low = 88
+      # one line to swap them
+    reference_solution: |
+      high = 54
+      low = 88
+      high, low = low, high
+      print(high)
+      print(low)
+    checks:
+      - type: state
+        expr: "high == 88 and low == 54"
+      - type: stdout
+        equals: |
+          88
+          54
+    hints:
+      - "The whole trick is one line: name1, name2 = name2, name1."
+
+  - id: py-collections/02-tuples-unpacking/02-predict-reads
+    title: "Predict: what tuples allow"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      Tuples support every READING operation lists do — indexing, negative
+      indexing, slicing, len. (What they refuse is *changing*, which you'll
+      meet in the next exercise.) Predict all four lines; a tuple slice
+      prints as a tuple, like `(1, 2)`.
+    concepts: [tuples, indexing, slicing]
+    starter_code: |
+      rgb = (240, 128, 0, 255)
+      print(rgb[0])
+      print(rgb[-1])
+      print(len(rgb))
+      print(rgb[1:3])
+    reference_solution: |
+      rgb = (240, 128, 0, 255)
+      print(rgb[0])
+      print(rgb[-1])
+      print(len(rgb))
+      print(rgb[1:3])
+    checks:
+      - type: stdout
+        equals: |
+          240
+          255
+          4
+          (128, 0)
+    hints:
+      - "rgb[-1] is the last element; len counts all four."
+      - "rgb[1:3] takes indices 1 and 2 (stop is exclusive) — and stays a tuple."
+
+  - id: py-collections/02-tuples-unpacking/03-fix-single-tuple
+    title: "Fix: the lonely tuple"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      `origin` is meant to be a one-element tuple holding just `"KSFO"`, so
+      that `len(origin)` is `1`. As written it's a plain string, and `len`
+      counts its four letters. Fix the definition — the output should be
+      `1` then `KSFO`.
+    concepts: [tuples, errors-reading]
+    starter_code: |
+      origin = ("KSFO")
+      print(len(origin))
+      print(origin[0])
+    reference_solution: |
+      origin = ("KSFO",)
+      print(len(origin))
+      print(origin[0])
+    checks:
+      - type: stdout
+        equals: |
+          1
+          KSFO
+      - type: state
+        expr: "origin == ('KSFO',)"
+    hints:
+      - "Parentheses don't make a tuple — the comma does. (\"KSFO\") is just \"KSFO\"."
+      - "A one-element tuple needs a trailing comma: (\"KSFO\",)."
+
+  - id: py-collections/02-tuples-unpacking/04-unpack-record
+    title: Split the record
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      `record` is a tuple of three fields: name, altitude, callsign. Unpack
+      it into three well-named variables in ONE line, then print exactly:
+      `Falcon at 41000 (FLC12)`
+    concepts: [unpacking, f-strings]
+    starter_code: |
+      record = ("Falcon", 41000, "FLC12")
+      # unpack into three names, then one f-string print
+    reference_solution: |
+      record = ("Falcon", 41000, "FLC12")
+      name, altitude, callsign = record
+      print(f"{name} at {altitude} ({callsign})")
+    checks:
+      - type: stdout
+        equals: "Falcon at 41000 (FLC12)"
+      - type: ast
+        requires: [JoinedStr]
+        message: "build the line with an f-string"
+    hints:
+      - "Three names, three values: name, altitude, callsign = record."
+      - "Then interpolate all three in one f-string."

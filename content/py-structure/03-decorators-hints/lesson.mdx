@@ -1,0 +1,48 @@
+# Decorators and type hints, at reading level
+
+Two more shapes you'll *read* constantly in library code. You don't need to write your own —
+you need to not freeze when you see them.
+
+## Decorators
+
+A **decorator** is a line starting with `@` directly above a function. It wraps the function,
+adding behavior without changing the function's own body:
+
+```python
+@timer
+def train(epochs):
+    ...
+```
+
+Read `@timer` as: "run `train` through `timer` first." The decorator is itself a function that
+takes your function and returns a modified version. You'll see them everywhere:
+`@property`, `@staticmethod`, `@app.route("/")` in web code, `@torch.no_grad()` in ML. The
+mental model: **`@thing` above a `def` means `thing` is modifying that function.** You mostly
+just need to know *what the specific decorator does* (its docs tell you), not how to build one.
+
+## Type hints
+
+**Type hints** annotate what types a function expects and returns. They're *documentation that
+tools can check* — Python does **not** enforce them at runtime:
+
+```python
+def greet(name: str, times: int = 1) -> str:
+    return (name + " ") * times
+```
+
+Read it as: `name` is a `str`, `times` is an `int` defaulting to 1, and the function returns
+(`->`) a `str`. Common ones: `int`, `str`, `float`, `bool`, `list`, `dict`, and
+`list[int]` / `dict[str, float]` for contents. Hints make unfamiliar library signatures
+*readable* — `def fit(self, X: np.ndarray, y: np.ndarray) -> "Model"` tells you the shapes at a
+glance.
+
+Since Python ignores them at runtime, a hint being "wrong" never crashes your code — it's a
+note to humans and tools, not a guarantee.
+
+<LangContrast lang="js">
+Type hints are TypeScript annotations that stayed in the runtime file: `name: str` is
+`name: string`, `-> str` is `: string` return type — but unlike TS, Python **doesn't compile
+them away or enforce them**; they're inert at runtime, checked only by external tools (mypy,
+your editor). Decorators are the same `@decorator` syntax TypeScript/Angular borrowed *from*
+Python — if you've seen `@Component` in Angular, you've seen this exact shape.
+</LangContrast>

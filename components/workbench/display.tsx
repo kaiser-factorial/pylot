@@ -5,7 +5,7 @@
 // All are readability surfaces (.readable): no glow, no effects, ever.
 
 import type { ReactNode } from 'react'
-import type { CheckResult, RunResult } from '@/lib/coderunner'
+import type { CheckResult, RunResult, SectionResult } from '@/lib/coderunner'
 
 /** Renders `backtick spans` in prompts/hints as inline code. */
 export function InlineCode({ text }: { text: string }) {
@@ -54,7 +54,10 @@ export function DifficultyDots({ level }: { level: number }) {
   )
 }
 
-export function Console({ result, placeholder }: { result: RunResult | null; placeholder: string }) {
+/** The console needs only the output surface of a result — flat and sectioned both fit. */
+export type ConsoleResult = Pick<RunResult, 'stdout' | 'error'> & { stderr?: string }
+
+export function Console({ result, placeholder }: { result: ConsoleResult | null; placeholder: string }) {
   return (
     <pre
       data-testid="console-output"
@@ -112,6 +115,56 @@ export function CheckReportView({ checks }: { checks: CheckResult[] }) {
         )
       })}
     </ul>
+  )
+}
+
+/**
+ * Per-section check report for sectioned exercises (ARCHITECTURE §4.4):
+ * "sections 1–3 pass, section 4's clean_rows drops the header" at a glance.
+ * Sections not run (halted by an earlier error) render dimmed.
+ */
+export function SectionedReportView({
+  sections,
+  titles,
+}: {
+  sections: SectionResult[]
+  titles: Record<string, string>
+}) {
+  if (sections.length === 0) return null
+  return (
+    <div data-testid="sectioned-report" className="readable space-y-2 px-3 pb-3">
+      {sections.map((s, i) => {
+        const color =
+          s.passed === true
+            ? 'var(--status-pass)'
+            : s.ran === false
+              ? 'var(--muted-foreground)'
+              : s.passed === false || s.error
+                ? 'var(--status-fail)'
+                : 'var(--status-warn)'
+        return (
+          <div key={s.id} data-testid={`section-report-${s.id}`} style={{ opacity: s.ran === false ? 0.55 : 1 }}>
+            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em]" style={{ color }}>
+              <span>{s.passed === true ? '✓' : s.ran === false ? '·' : s.error || s.passed === false ? '✗' : '~'}</span>
+              <span>
+                section {i + 1} — {titles[s.id] ?? s.id}
+              </span>
+            </p>
+            {s.error && (
+              <pre
+                className="mt-1 whitespace-pre-wrap pl-5 text-[12px] leading-5"
+                style={{ color: 'var(--status-fail)' }}
+              >
+                {s.error.traceback || `${s.error.type}: ${s.error.message}`}
+              </pre>
+            )}
+            <div className="pl-3">
+              <CheckReportView checks={s.checks} />
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 

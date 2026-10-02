@@ -1,0 +1,31 @@
+# Slicing
+
+Slicing pulls a sub-sequence out with `[start:stop:step]`. Learn it cold — the exact
+same syntax drives numpy arrays and pandas frames later, where it does 90% of the work.
+
+```python
+temps = [12, 15, 19, 23, 21, 16]
+temps[1:4]     # [15, 19, 23] — start inclusive, stop EXCLUSIVE
+temps[:3]      # [12, 15, 19] — omitted start = from the beginning
+temps[3:]      # [23, 21, 16] — omitted stop = to the end
+temps[-2:]     # [21, 16]     — last two
+temps[::2]     # [12, 19, 21] — every second element
+```
+
+Two rules carry everything:
+
+1. **Stop is exclusive.** `[1:4]` gives indices 1, 2, 3 — never 4. Handy consequence:
+   `[a:b]` has exactly `b - a` elements, and `temps[:k] + temps[k:]` is always the
+   whole list.
+2. **Omitted means "all the way".** Both omitted — `temps[:]` — is a full **copy**.
+
+Unlike indexing, slicing never raises: out-of-range slices just clip to what exists
+(`temps[4:100]` quietly gives the last two). A slice is always a NEW list; the
+original is untouched.
+
+<LangContrast lang="js">
+This is `arr.slice(1, 4)` promoted to syntax — same exclusive stop, same
+negative-index support (JS's `arr.slice(-2)` is Python's `arr[-2:]`). What JS doesn't
+have at all: the `step` — `[::2]` (every other), and the party trick `[::-1]`
+(reversed copy).
+</LangContrast>

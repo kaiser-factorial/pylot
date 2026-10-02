@@ -1,0 +1,138 @@
+exercises:
+  - id: py-functions/00-def-return/01-define-area
+    title: Define a function
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Define a function `rectangle_area(width, height)` that RETURNS the
+      product (don't print inside it). The starter calls it and prints the
+      result — leave that call alone. It should print `72`.
+    concepts: [functions-defining]
+    starter_code: |
+      # def rectangle_area(width, height):
+
+      print(rectangle_area(8, 9))
+    reference_solution: |
+      def rectangle_area(width, height):
+          return width * height
+
+      print(rectangle_area(8, 9))
+    checks:
+      - type: function
+        name: rectangle_area
+        cases:
+          - args: [8, 9]
+            expected: 72
+          - args: [3, 4]
+            expected: 12
+          - args: [0, 5]
+            expected: 0
+      - type: stdout
+        equals: "72"
+    hints:
+      - "def rectangle_area(width, height): then an indented return."
+      - "Return the product — the given print call will display it."
+
+  - id: py-functions/00-def-return/02-predict-none
+    title: "Predict: the missing return"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      `label` PRINTS but never returns, so calling it gives back `None`.
+      Trace what each line prints — including what `result` holds. `None`
+      prints as `None`.
+    concepts: [functions-defining, none]
+    starter_code: |
+      def label(x):
+          print(f"value is {x}")
+
+      result = label(42)
+      print(result)
+    reference_solution: |
+      def label(x):
+          print(f"value is {x}")
+
+      result = label(42)
+      print(result)
+    checks:
+      - type: stdout
+        equals: |
+          value is 42
+          None
+    hints:
+      - "Calling label(42) runs its print first — that's the first line."
+      - "label has no return, so result is None, and printing it shows None."
+
+  - id: py-functions/00-def-return/03-fix-print-return
+    title: "Fix: it printed when it should have returned"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      `double` prints its answer instead of returning it, so the attempt to
+      use it in arithmetic fails (`None + 1`). Change it to RETURN, so the
+      caller's `print(double(20) + 1)` shows `41`.
+    concepts: [functions-defining, errors-reading]
+    starter_code: |
+      def double(n):
+          print(n * 2)
+
+      print(double(20) + 1)
+    reference_solution: |
+      def double(n):
+          return n * 2
+
+      print(double(20) + 1)
+    checks:
+      - type: function
+        name: double
+        cases:
+          - args: [20]
+            expected: 40
+          - args: [0]
+            expected: 0
+      - type: stdout
+        equals: "41"
+    hints:
+      - "Read the error: unsupported operand + for NoneType — double returns None."
+      - "Swap the print inside double for a return; the caller already prints."
+
+  - id: py-functions/00-def-return/04-early-return
+    title: The early exit
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      Define `safe_divide(a, b)` that returns `a / b`, but returns the string
+      `"undefined"` when `b` is 0 (check b first and return early — code after
+      a return doesn't run). The starter prints two calls: expect `5.0` then
+      `undefined`.
+    concepts: [functions-defining, conditionals]
+    starter_code: |
+      # def safe_divide(a, b):
+
+      print(safe_divide(10, 2))
+      print(safe_divide(10, 0))
+    reference_solution: |
+      def safe_divide(a, b):
+          if b == 0:
+              return "undefined"
+          return a / b
+
+      print(safe_divide(10, 2))
+      print(safe_divide(10, 0))
+    checks:
+      - type: function
+        name: safe_divide
+        cases:
+          - args: [10, 2]
+            expected: 5.0
+          - args: [10, 0]
+            expected: "undefined"
+          - args: [9, 3]
+            expected: 3.0
+      - type: stdout
+        equals: |
+          5.0
+          undefined
+    hints:
+      - "Guard first: if b == 0, return \"undefined\" before the division."
+      - "After that early return, the normal return a / b handles every other case."

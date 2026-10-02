@@ -1,0 +1,118 @@
+exercises:
+  - id: py-collections/06-capstone/01-gradebook
+    title: "Capstone: the gradebook"
+    kind: capstone
+    difficulty: 3
+    prompt: |
+      Build a small gradebook end to end — one section at a time. Each
+      section builds on the names defined before it, so `roster` from
+      section 1 is available in every later section.
+    concepts: [dicts, lists, tuples, slicing, unpacking]
+    sections:
+      - id: roster
+        title: assemble the roster
+        instructions: |
+          Build a dict `roster` mapping each student name to their list of
+          three test scores:
+            ada → 88, 92, 79
+            grace → 95, 91, 100
+            joan → 70, 85, 90
+        starter_code: |
+          # roster = { ... }
+        reference_solution: |
+          roster = {
+              "ada": [88, 92, 79],
+              "grace": [95, 91, 100],
+              "joan": [70, 85, 90],
+          }
+        checks:
+          - type: state
+            expr: 'roster == {"ada": [88, 92, 79], "grace": [95, 91, 100], "joan": [70, 85, 90]}'
+            message: "roster maps each name to its list of three scores"
+
+      - id: averages
+        title: per-student averages
+        instructions: |
+          Build a dict `averages` mapping each name to that student's average
+          score, rounded to one decimal with `round(value, 1)`. Use
+          `sum(scores) / len(scores)` — no loops needed, just do the three.
+          (Expected: ada 86.3, grace 95.3, joan 81.7.)
+        starter_code: |
+          # averages = { ... }  — use roster from the previous section
+        reference_solution: |
+          averages = {
+              "ada": round(sum(roster["ada"]) / len(roster["ada"]), 1),
+              "grace": round(sum(roster["grace"]) / len(roster["grace"]), 1),
+              "joan": round(sum(roster["joan"]) / len(roster["joan"]), 1),
+          }
+        checks:
+          - type: state
+            expr: 'averages == {"ada": 86.3, "grace": 95.3, "joan": 81.7}'
+            message: "each average is round(sum(scores)/len(scores), 1)"
+
+      - id: stats
+        title: class stats and ranking
+        instructions: |
+          Three names, using what's already defined:
+            - `all_scores`: one flat list of every score (concatenate the
+              three lists from roster with +).
+            - `top_score`: the single highest score anywhere (use max).
+            - `ranking`: a list of `(average, name)` tuples, one per student,
+              sorted ascending. Sorting tuples sorts by the first element, so
+              the LAST entry is the top student.
+        starter_code: |
+          # all_scores = ...
+          # top_score = ...
+          # ranking = ...
+        reference_solution: |
+          all_scores = roster["ada"] + roster["grace"] + roster["joan"]
+          top_score = max(all_scores)
+          ranking = sorted([
+              (averages["ada"], "ada"),
+              (averages["grace"], "grace"),
+              (averages["joan"], "joan"),
+          ])
+        checks:
+          - type: state
+            expr: "len(all_scores) == 9 and top_score == 100"
+            message: "all_scores has all nine scores; top_score is the max (100)"
+          - type: state
+            expr: 'ranking[-1] == (95.3, "grace") and ranking[0] == (81.7, "joan")'
+            message: "ranking is sorted ascending — top student is the last tuple"
+
+      - id: report
+        title: write the finding
+        instructions: |
+          Print one line naming the top student and their average, using the
+          ranking (unpack the last tuple — don't retype the name). Then assign
+          a string variable `summary` (one or two sentences) explaining who
+          finished top and roughly how their average compared to the others.
+          The print output must be exactly:
+          `top of the class: grace (95.3)`
+        starter_code: |
+          # top_avg, top_name = ranking[-1]
+          # print(...)
+          # summary = "..."
+        reference_solution: |
+          top_avg, top_name = ranking[-1]
+          print(f"top of the class: {top_name} ({top_avg})")
+          summary = (
+              "Grace finished top with a 95.3 average, clearly ahead of Ada's "
+              "86.3 and Joan's 81.7 — the widest gap was to Joan, about 13 points."
+          )
+        checks:
+          - type: stdout
+            equals: "top of the class: grace (95.3)"
+          - type: state
+            expr: "isinstance(summary, str) and len(summary) > 50"
+            message: "summary is a sentence or two of real explanation"
+          - type: ai_rubric
+            rubric: |
+              The `summary` string correctly identifies grace as the
+              top-ranked student and states or clearly implies her average
+              (95.3) or her margin over the others, consistent with the
+              computed ranking. It must not contradict the numbers
+              (ada 86.3, joan 81.7). Vague summaries that name no one fail.
+        hints:
+          - "Unpack the last ranking tuple: top_avg, top_name = ranking[-1]."
+          - "The summary is a normal string — describe what the ranking shows in your own words."

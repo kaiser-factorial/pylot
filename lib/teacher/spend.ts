@@ -1,4 +1,5 @@
 import 'server-only'
+import { createSpeechAccounting } from '@/lib/narration/accounting'
 import { gte, sql } from 'drizzle-orm'
 import { db, schema } from '@/db'
 
@@ -42,7 +43,8 @@ export async function getMonthlySpendUsd(): Promise<number> {
     .select({ total: sql<number>`coalesce(sum(${schema.aiUsage.costUsd}), 0)` })
     .from(schema.aiUsage)
     .where(gte(schema.aiUsage.createdAt, startOfCurrentUtcMonth()))
-  return row?.total ?? 0
+  const speech = speechSpend()
+  return (row?.total ?? 0) + speech
 }
 
 export type BudgetStatus = { allowed: boolean; spentUsd: number; capUsd: number }
@@ -68,3 +70,11 @@ export async function recordUsage(args: {
     costUsd: estimateCostUsd(args.model, args.inputTokens, args.outputTokens),
   })
 }
+
+const speechAccounting = createSpeechAccounting(db, {
+  cap: () => SPEND_CAP_USD,
+  rate: () => Number(process.env.PYLOT_TTS_USD_PER_MCHAR ?? 16),
+})
+const speechSpend = speechAccounting.spent
+export const reserveSpeech = speechAccounting.reserve
+export const settleSpeech = speechAccounting.settle

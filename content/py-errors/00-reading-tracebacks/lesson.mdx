@@ -1,0 +1,45 @@
+# Reading tracebacks
+
+When Python hits an error it can't handle, it prints a **traceback** and stops. This is not
+noise to scroll past — it's a precise map to the bug, and reading it fluently is the single
+highest-leverage debugging skill you can build. Most people never learn to read it. You will.
+
+Here's one:
+
+```
+Traceback (most recent call last):
+  File "flight.py", line 8, in <module>
+    print(fare(100, 0))
+  File "flight.py", line 4, in fare
+    return base / passengers
+ZeroDivisionError: division by zero
+```
+
+Read it **bottom to top**:
+
+1. **The last line is the actual error.** `ZeroDivisionError: division by zero` — the type
+   (`ZeroDivisionError`) and a message (`division by zero`). Start here, always.
+2. **The frame just above it is where it blew up.** `line 4, in fare` →
+   `return base / passengers`. That's the exact line and the exact operation.
+3. **The frames keep going up the call chain** — who called `fare`, who called them — so you
+   can see *how execution arrived* at the crash. The top frame is where it all started.
+
+"Most recent call last" means the crash site is at the **bottom** — the reading direction
+trips everyone up once. The error type alone often tells you the category:
+
+| Exception | Usually means |
+|---|---|
+| `NameError` | a name you used doesn't exist (typo? not defined yet?) |
+| `TypeError` | wrong type for an operation (`"3" + 4`, calling a non-function) |
+| `ValueError` | right type, bad value (`int("hello")`) |
+| `KeyError` / `IndexError` | missing dict key / out-of-range list index |
+| `AttributeError` | object has no such method/attribute (`"x".push()`) |
+| `ZeroDivisionError` | divide by zero |
+
+<LangContrast lang="js">
+Same idea as a JS stack trace, two differences worth knowing: Python reads **bottom-up**
+(the error is the *last* line, not the first), and Python's exception *types* are richer and
+more specific than JS's mostly-`TypeError`/`Error` world — the type name alone is a strong
+hint. `undefined is not a function` becomes a precise `AttributeError` or `TypeError` naming
+what went wrong.
+</LangContrast>

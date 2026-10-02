@@ -1,0 +1,153 @@
+exercises:
+  - id: py-errors/04-json-pathlib/01-roundtrip
+    title: Dump and load
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Import `json`. Given the dict `plane`, convert it to a JSON string
+      `text` with `json.dumps`, then parse it back into a new dict `restored`
+      with `json.loads`. Print whether the round-trip preserved the data by
+      printing `restored == plane`. Expected: `True`.
+    concepts: [json-data]
+    starter_code: |
+      import json
+      plane = {"model": "A320", "seats": 180}
+      # text = ...
+      # restored = ...
+      # print(restored == plane)
+    reference_solution: |
+      import json
+      plane = {"model": "A320", "seats": 180}
+      text = json.dumps(plane)
+      restored = json.loads(text)
+      print(restored == plane)
+    checks:
+      - type: state
+        expr: "restored == plane and isinstance(text, str)"
+      - type: stdout
+        equals: "True"
+    hints:
+      - "json.dumps(plane) makes the string; json.loads(text) parses it back."
+      - "A clean round-trip means restored equals the original plane."
+
+  - id: py-errors/04-json-pathlib/02-predict-translate
+    title: "Predict: the JSON translations"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      `json.dumps` translates Python values to JSON spelling: `True`→`true`,
+      `None`→`null`, and it wraps strings in double quotes. Predict the exact
+      string this prints.
+    concepts: [json-data, none, booleans]
+    starter_code: |
+      import json
+      print(json.dumps({"active": True, "note": None}))
+    reference_solution: |
+      import json
+      print(json.dumps({"active": True, "note": None}))
+    checks:
+      - type: stdout
+        equals: '{"active": true, "note": null}'
+    hints:
+      - "Python True becomes JSON true (lowercase); None becomes null."
+      - "Keys and string values use double quotes in JSON."
+
+  - id: py-errors/04-json-pathlib/03-fix-json-file
+    title: "Fix: saved the object, not the JSON"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      This tries to save a dict to a file, but it passes the dict straight to
+      `f.write`, which needs a STRING — raising a TypeError. Convert the dict
+      to JSON text first. After the fix it writes valid JSON and the read-back
+      parses to an equal dict, printing `True`.
+    concepts: [json-data, files-io, errors-reading]
+    starter_code: |
+      import json
+      config = {"theme": "cyber", "volume": 7}
+      with open("config.json", "w") as f:
+          f.write(config)
+
+      with open("config.json", "r") as f:
+          loaded = json.loads(f.read())
+      print(loaded == config)
+    reference_solution: |
+      import json
+      config = {"theme": "cyber", "volume": 7}
+      with open("config.json", "w") as f:
+          f.write(json.dumps(config))
+
+      with open("config.json", "r") as f:
+          loaded = json.loads(f.read())
+      print(loaded == config)
+    checks:
+      - type: stdout
+        equals: "True"
+    hints:
+      - "The error: write() argument must be str, not dict."
+      - "Wrap the dict in json.dumps(config) to get a string to write."
+
+  - id: py-errors/04-json-pathlib/05-path-open
+    title: A Path where a filename goes
+    kind: write-code
+    difficulty: 3
+    prompt: |
+      `Path` objects work anywhere a filename string does. Import `Path`,
+      make `log_path = Path("mission.log")`, then use it (not a string) to
+      write the line `launch` with `with open(log_path, "w")`, read it back
+      and print it stripped, and finally print `log_path.suffix`. Expected:
+      `launch` then `.log`.
+    concepts: [pathlib, files-io, context-managers]
+    starter_code: |
+      from pathlib import Path
+      # log_path = Path("mission.log")
+    reference_solution: |
+      from pathlib import Path
+      log_path = Path("mission.log")
+      with open(log_path, "w") as f:
+          f.write("launch\n")
+      with open(log_path, "r") as f:
+          print(f.read().strip())
+      print(log_path.suffix)
+    checks:
+      - type: stdout
+        equals: |
+          launch
+          .log
+      - type: ast
+        requires: [With, ImportFrom]
+        message: "use the Path object directly in open(), inside a with block"
+    hints:
+      - "Pass the Path object straight to open(log_path, \"w\") — no str() needed."
+      - "log_path.suffix is the extension, .log (with the dot)."
+
+  - id: py-errors/04-json-pathlib/04-path-parts
+    title: Take a path apart
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Import `Path` from `pathlib`. Build a path by joining `"data"` and
+      `"flights.csv"` with the `/` operator, store it in `p`, and print its
+      `.name`, then its `.suffix`, then its `.stem` — three lines. Expected:
+      `flights.csv`, `.csv`, `flights`.
+    concepts: [pathlib]
+    starter_code: |
+      from pathlib import Path
+      # p = Path("data") / "flights.csv"
+    reference_solution: |
+      from pathlib import Path
+      p = Path("data") / "flights.csv"
+      print(p.name)
+      print(p.suffix)
+      print(p.stem)
+    checks:
+      - type: stdout
+        equals: |
+          flights.csv
+          .csv
+          flights
+      - type: ast
+        requires: [ImportFrom]
+    hints:
+      - "Path(\"data\") / \"flights.csv\" builds the path with the / operator."
+      - ".name is the full filename, .suffix the extension (with the dot), .stem the name without it."

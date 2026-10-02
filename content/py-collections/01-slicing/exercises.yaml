@@ -1,0 +1,128 @@
+exercises:
+  - id: py-collections/01-slicing/01-predict-cuts
+    title: "Predict: four cuts"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      Four slices of one list. Stop is exclusive; omitted means all-the-way;
+      negatives count from the end. Predict all four printed lines exactly —
+      lists print with brackets and commas, like `[1, 2]`.
+    concepts: [slicing]
+    starter_code: |
+      readings = [7, 42, 8, 99, 13, 55]
+      print(readings[2:5])
+      print(readings[:2])
+      print(readings[-3:])
+      print(readings[::3])
+    reference_solution: |
+      readings = [7, 42, 8, 99, 13, 55]
+      print(readings[2:5])
+      print(readings[:2])
+      print(readings[-3:])
+      print(readings[::3])
+    checks:
+      - type: stdout
+        equals: |
+          [8, 99, 13]
+          [7, 42]
+          [99, 13, 55]
+          [7, 99]
+    hints:
+      - "readings[2:5] starts at index 2 and STOPS BEFORE index 5 — three elements."
+      - "[::3] takes indices 0 and 3 (6 would be next, but the list ends)."
+
+  - id: py-collections/01-slicing/02-blank-window
+    title: "Fill in: the moving window"
+    kind: fill-blank
+    difficulty: 2
+    prompt: |
+      Complete the three blanks (`___`) so the prints show: the first three
+      altitudes, the last two, and a full reversed copy. Slices only — no
+      new lists typed out by hand.
+    concepts: [slicing]
+    starter_code: |
+      altitudes = [310, 330, 350, 370, 390]
+      print(altitudes[___])
+      print(altitudes[___])
+      print(altitudes[___])
+    reference_solution: |
+      altitudes = [310, 330, 350, 370, 390]
+      print(altitudes[:3])
+      print(altitudes[-2:])
+      print(altitudes[::-1])
+    checks:
+      - type: stdout
+        equals: |
+          [310, 330, 350]
+          [370, 390]
+          [390, 370, 350, 330, 310]
+      - type: state
+        expr: "altitudes == [310, 330, 350, 370, 390]"
+    hints:
+      - "First three: start omitted, stop at 3 → [:3]."
+      - "For the last two, which negative index should the slice start at? For the reversed copy, what step value walks a list backwards?"
+
+  - id: py-collections/01-slicing/03-fix-exclusive
+    title: "Fix: the fencepost"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This should split six samples into a training set (first four) and a
+      test set (the rest) — a cut you will make a thousand times in data
+      work. It loses a sample: `4 + 1 = 5`, not 6. Fix the slices so
+      nothing falls through the crack (and nothing is counted twice).
+    concepts: [slicing, errors-reading]
+    starter_code: |
+      samples = [0.2, 0.5, 0.9, 1.4, 2.2, 3.1]
+      train = samples[:4]
+      test = samples[5:]
+      print(len(train) + len(test))
+    reference_solution: |
+      samples = [0.2, 0.5, 0.9, 1.4, 2.2, 3.1]
+      train = samples[:4]
+      test = samples[4:]
+      print(len(train) + len(test))
+    checks:
+      - type: stdout
+        equals: "6"
+      - type: state
+        expr: "train == [0.2, 0.5, 0.9, 1.4] and test == [2.2, 3.1]"
+    hints:
+      - "samples[:4] takes indices 0–3. Which index should the test set start at?"
+      - "The invariant: lst[:k] + lst[k:] == lst — SAME k on both sides."
+
+  - id: py-collections/01-slicing/04-checkpoint-copy
+    title: The untouched original
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      You're given `flightplan`. Make `shortcut` — a COPY of everything
+      except the first and last waypoints — then append `"KDEN"` to the
+      shortcut only. Print both lists (flightplan first) and confirm the
+      original still has all 5 waypoints.
+    concepts: [slicing, mutation, lists]
+    starter_code: |
+      flightplan = ["KSFO", "KRNO", "KSLC", "KOMA", "KORD"]
+      # shortcut = ...
+    reference_solution: |
+      flightplan = ["KSFO", "KRNO", "KSLC", "KOMA", "KORD"]
+      shortcut = flightplan[1:-1]
+      shortcut.append("KDEN")
+      print(flightplan)
+      print(shortcut)
+    checks:
+      - type: state
+        expr: 'flightplan == ["KSFO", "KRNO", "KSLC", "KOMA", "KORD"]'
+        message: "the original must not change — slice, then append to the copy"
+      - type: state
+        expr: 'shortcut == ["KRNO", "KSLC", "KOMA", "KDEN"]'
+      - type: stdout
+        equals: |
+          ['KSFO', 'KRNO', 'KSLC', 'KOMA', 'KORD']
+          ['KRNO', 'KSLC', 'KOMA', 'KDEN']
+      - type: ast
+        requires: [Subscript]
+        message: "build shortcut with a slice, don't retype the middle waypoints"
+    hints:
+      - "Everything but first and last: [1:-1]."
+      - "A slice is already a new list — append to shortcut, and flightplan never feels it."

@@ -60,15 +60,63 @@ export function listAllExercises(): ExerciseRef[] {
 /**
  * What the browser receives. reference_solution never leaves the server —
  * it is a spoiler and the learner-facing app must not ship it.
+ *
+ * Exception by design: parsons exercises ARE the solution's lines, scrambled.
+ * The set of lines is the exercise material; only the ORDER is the answer,
+ * and the order is scrambled server-side (deterministically, so a reload
+ * doesn't reshuffle mid-solve) before anything reaches the client.
  */
 export type ClientExercise = Omit<Exercise, 'reference_solution' | 'sections'> & {
   sections: Omit<Exercise['sections'][number], 'reference_solution'>[]
+  /** parsons only: the solution's non-blank lines in scrambled order */
+  parsons_lines?: string[]
+}
+
+/** FNV-1a — a stable per-exercise shuffle seed (no Math.random: SSR + stability). */
+function fnv1a(s: string): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
+
+function mulberry32(seed: number): () => number {
+  let a = seed
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/** Deterministic scramble that is guaranteed not to be the original order. */
+export function scrambleLines(code: string, seedKey: string): string[] {
+  const lines = code.replace(/\n+$/, '').split('\n').filter((l) => l.trim() !== '')
+  if (lines.length < 2) return lines
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const rand = mulberry32(fnv1a(`${seedKey}#${attempt}`))
+    const shuffled = [...lines]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    if (shuffled.join('\n') !== lines.join('\n')) return shuffled
+  }
+  // pathological (e.g. all lines identical): order can't matter anyway
+  return lines
 }
 
 export function toClientExercise(ex: Exercise): ClientExercise {
-  const { reference_solution: _drop, sections, ...rest } = ex
+  const { reference_solution: solution, sections, ...rest } = ex
   return {
     ...rest,
     sections: sections.map(({ reference_solution: _dropSection, ...s }) => s),
+    ...(ex.kind === 'parsons' && solution
+      ? { parsons_lines: scrambleLines(solution, ex.id) }
+      : {}),
   }
 }

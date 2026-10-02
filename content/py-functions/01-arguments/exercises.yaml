@@ -1,0 +1,179 @@
+exercises:
+  - id: py-functions/01-arguments/01-default
+    title: A sensible default
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Define `greet(name, greeting="hello")` that returns `"{greeting},
+      {name}"`. The starter makes two calls — one relying on the default,
+      one overriding it. Expected output: `hello, ada` then `hi, grace`.
+    concepts: [function-args, functions-defining]
+    starter_code: |
+      # def greet(name, greeting="hello"):
+
+      print(greet("ada"))
+      print(greet("grace", "hi"))
+    reference_solution: |
+      def greet(name, greeting="hello"):
+          return f"{greeting}, {name}"
+
+      print(greet("ada"))
+      print(greet("grace", "hi"))
+    checks:
+      - type: function
+        name: greet
+        cases:
+          - args: ["ada"]
+            expected: "hello, ada"
+          - args: ["grace", "hi"]
+            expected: "hi, grace"
+      - type: stdout
+        equals: |
+          hello, ada
+          hi, grace
+    hints:
+      - "The default goes in the signature: greeting=\"hello\"."
+      - "When the caller omits greeting, the default fills in."
+
+  - id: py-functions/01-arguments/02-predict-keyword
+    title: "Predict: keywords skip the default"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      `box` has two optional parameters. Trace each call — positional fills
+      left to right, keyword arguments name their target and can skip past
+      an earlier default. Predict all three lines.
+    concepts: [function-args]
+    starter_code: |
+      def box(w, h=2, d=3):
+          return w * h * d
+
+      print(box(5))
+      print(box(5, 4))
+      print(box(5, d=10))
+    reference_solution: |
+      def box(w, h=2, d=3):
+          return w * h * d
+
+      print(box(5))
+      print(box(5, 4))
+      print(box(5, d=10))
+    checks:
+      - type: stdout
+        equals: |
+          30
+          60
+          100
+    hints:
+      - "box(5): h and d default to 2 and 3 → 5*2*3."
+      - "box(5, d=10): h stays the default 2, but d is named 10 → 5*2*10."
+
+  - id: py-functions/01-arguments/03-fix-default-order
+    title: "Fix: the default in the wrong place"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This won't even define — a parameter with a default can't come before
+      one without. Run it, read the SyntaxError, then reorder the parameters
+      so the required `amount` comes first (the calls already assume that
+      order). Expected output: `$50 USD` then `$50 EUR`.
+    concepts: [function-args, errors-reading]
+    starter_code: |
+      def price(currency="USD", amount):
+          return f"${amount} {currency}"
+
+      print(price(50))
+      print(price(50, "EUR"))
+    reference_solution: |
+      def price(amount, currency="USD"):
+          return f"${amount} {currency}"
+
+      print(price(50))
+      print(price(50, "EUR"))
+    checks:
+      - type: function
+        name: price
+        cases:
+          - args: [50]
+            expected: "$50 USD"
+          - args: [50, "EUR"]
+            expected: "$50 EUR"
+      - type: stdout
+        equals: |
+          $50 USD
+          $50 EUR
+    hints:
+      - "The error: non-default argument follows default argument."
+      - "Required parameters first, defaults after: def price(amount, currency=\"USD\")."
+
+  - id: py-functions/01-arguments/05-fix-mutable-default
+    title: "Fix: the default that remembered"
+    kind: fix-bug
+    difficulty: 4
+    prompt: |
+      `log_event` uses a mutable default `[]`, so the SAME list is reused
+      across calls — the second call sees the first call's event. Each call
+      here passes no `history`, yet the output shows them piling up. Fix it
+      with the None-default idiom so each independent call starts fresh.
+      Expected output: `['takeoff']` then `['landing']`.
+    concepts: [function-args, mutation, errors-reading]
+    starter_code: |
+      def log_event(event, history=[]):
+          history.append(event)
+          return history
+
+      print(log_event("takeoff"))
+      print(log_event("landing"))
+    reference_solution: |
+      def log_event(event, history=None):
+          if history is None:
+              history = []
+          history.append(event)
+          return history
+
+      print(log_event("takeoff"))
+      print(log_event("landing"))
+    checks:
+      - type: stdout
+        equals: |
+          ['takeoff']
+          ['landing']
+      - type: ast
+        requires: [If]
+        message: "default history to None and build a fresh list inside when it's None"
+    hints:
+      - "The default [] is created ONCE at definition and shared by every call that omits history."
+      - "Default to None, then `if history is None: history = []` gives each call its own list."
+
+  - id: py-functions/01-arguments/04-keyword-call
+    title: Call it clearly
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      `make_seat` is already defined. Without changing it, add ONE call that
+      uses keyword arguments to book row 12, seat "C", in first class (the
+      `cabin` parameter). Assign the result to `booking` and print it.
+      Expected: `12C first`.
+    concepts: [function-args]
+    starter_code: |
+      def make_seat(row, letter, cabin="economy"):
+          return f"{row}{letter} {cabin}"
+
+      # booking = make_seat(...)   ← use keyword arguments
+    reference_solution: |
+      def make_seat(row, letter, cabin="economy"):
+          return f"{row}{letter} {cabin}"
+
+      booking = make_seat(row=12, letter="C", cabin="first")
+      print(booking)
+    checks:
+      - type: state
+        expr: "booking == '12C first'"
+      - type: stdout
+        equals: "12C first"
+      - type: ast
+        requires: [keyword]
+        message: "call it with keyword arguments (name=value)"
+    hints:
+      - "Name each argument at the call site: row=12, letter=\"C\", cabin=\"first\"."
+      - "cabin defaults to economy — you must pass cabin=\"first\" to override it."

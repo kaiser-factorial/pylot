@@ -1,0 +1,141 @@
+exercises:
+  - id: py-structure/01-organizing-main/01-extract-function
+    title: Pull out a function
+    kind: write-code
+    difficulty: 2
+    prompt: |
+      Refactor this into a named function. Define `celsius_to_f(c)` that
+      returns `c * 9 / 5 + 32`, then a `main()` that prints
+      `celsius_to_f(100)`, and finally the `if __name__ == "__main__":` guard
+      calling `main()`. Expected output: `212.0`.
+    concepts: [main-pattern, functions-defining]
+    starter_code: |
+      # def celsius_to_f(c):
+      # def main():
+      # if __name__ == "__main__":
+    reference_solution: |
+      def celsius_to_f(c):
+          return c * 9 / 5 + 32
+
+      def main():
+          print(celsius_to_f(100))
+
+      if __name__ == "__main__":
+          main()
+    checks:
+      - type: stdout
+        equals: "212.0"
+      - type: function
+        name: celsius_to_f
+        cases:
+          - args: [100]
+            expected: 212.0
+          - args: [0]
+            expected: 32.0
+      - type: ast
+        requires: [If, FunctionDef]
+        message: "define main() and guard it with if __name__ == \"__main__\""
+    hints:
+      - "Two functions: celsius_to_f(c) returns the value, main() prints it."
+      - "The guard at the bottom: if __name__ == \"__main__\": main()."
+
+  - id: py-structure/01-organizing-main/02-predict-name
+    title: "Predict: the __name__ guard"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      This file is being RUN directly (not imported), so `__name__` is
+      `"__main__"` and the guard fires. Trace it — note `setup()` is called
+      inside `main()`, not at import time. Predict both printed lines.
+    concepts: [main-pattern, execution-model]
+    starter_code: |
+      def setup():
+          return "ready"
+
+      def main():
+          print(setup())
+          print("running")
+
+      if __name__ == "__main__":
+          main()
+    reference_solution: |
+      def setup():
+          return "ready"
+
+      def main():
+          print(setup())
+          print("running")
+
+      if __name__ == "__main__":
+          main()
+    checks:
+      - type: stdout
+        equals: |
+          ready
+          running
+    hints:
+      - "Run directly means __name__ == \"__main__\", so main() is called."
+      - "main() prints setup()'s return, then \"running\"."
+
+  - id: py-structure/01-organizing-main/03-fix-toplevel
+    title: "Fix: the side effect at import time"
+    kind: fix-bug
+    difficulty: 3
+    prompt: |
+      This defines a function but then does real work at the top level, so
+      just importing the file would run it as a side effect. Move the two
+      working lines into a `main()` function and guard the call with
+      `if __name__ == "__main__":`. Output stays `84`.
+    concepts: [main-pattern, errors-reading]
+    starter_code: |
+      def double(n):
+          return n * 2
+
+      result = double(42)
+      print(result)
+    reference_solution: |
+      def double(n):
+          return n * 2
+
+      def main():
+          result = double(42)
+          print(result)
+
+      if __name__ == "__main__":
+          main()
+    checks:
+      - type: stdout
+        equals: "84"
+      - type: ast
+        requires: [If, FunctionDef]
+        message: "wrap the work in main() and guard it with the __name__ check"
+    hints:
+      - "The two lines after double() run at import — move them into a def main()."
+      - "Then call main() only under if __name__ == \"__main__\"."
+
+  - id: py-structure/01-organizing-main/04-parsons-main
+    title: "Reorder: a well-structured script"
+    kind: parsons
+    difficulty: 2
+    prompt: |
+      These lines make a tidy script: a helper function, a main() that uses
+      it, and the entry-point guard. Order them the conventional way —
+      definitions first, the guard last.
+    concepts: [main-pattern]
+    reference_solution: |
+      def greet(name):
+          return f"hello, {name}"
+
+      def main():
+          print(greet("ada"))
+
+      if __name__ == "__main__":
+          main()
+    checks:
+      - type: stdout
+        equals: "hello, ada"
+      - type: ast
+        requires: [If, FunctionDef]
+    hints:
+      - "greet must be defined before main() calls it."
+      - "The if __name__ guard goes at the very bottom, calling main()."

@@ -78,6 +78,8 @@ export const exerciseKind = z.enum([
 
 export const section = z.object({
   id: z.string(),
+  /** short label for the section header; falls back to the id in the UI */
+  title: z.string().optional(),
   instructions: z.string(),
   starter_code: z.string().default(''),
   reference_solution: z.string(),
@@ -109,6 +111,28 @@ export const exercise = z.object({
   .refine((e) => e.sections.length > 0 || e.reference_solution !== undefined, {
     message: 'non-sectioned exercise must have a reference_solution',
   })
+  .refine((e) => e.kind !== 'parsons' || e.sections.length === 0, {
+    message: 'parsons exercises cannot be sectioned',
+  })
+  .refine(
+    (e) =>
+      e.kind !== 'parsons' ||
+      (e.reference_solution ?? '').split('\n').filter((l) => l.trim() !== '').length >= 3,
+    { message: 'parsons needs a reference_solution with at least 3 non-blank lines to reorder' }
+  )
+  .refine((e) => e.kind !== 'capstone' || e.sections.length > 0, {
+    message: 'capstone exercises must be sectioned (ARCHITECTURE §4.4)',
+  })
+  .refine(
+    (e) => {
+      // ai_rubric is the capstone-only exception to deterministic grading (invariant #2)
+      const hasRubric =
+        e.checks.some((c) => c.type === 'ai_rubric') ||
+        e.sections.some((s) => s.checks.some((c) => c.type === 'ai_rubric'))
+      return !hasRubric || e.kind === 'capstone'
+    },
+    { message: 'ai_rubric checks are allowed on capstone exercises only' }
+  )
 export type Exercise = z.infer<typeof exercise>
 
 export const exercisesFile = z.object({

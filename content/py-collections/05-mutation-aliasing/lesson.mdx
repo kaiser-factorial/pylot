@@ -1,0 +1,42 @@
+# Mutation vs rebinding (and the aliasing trap)
+
+Two different things look similar and behave nothing alike.
+
+**Rebinding** points a name at a brand-new object:
+
+```python
+nums = [1, 2, 3]
+nums = [4, 5, 6]      # `nums` now points at a different list; the old one is gone
+```
+
+**Mutating** changes the object a name points at, in place:
+
+```python
+nums = [1, 2, 3]
+nums.append(4)        # same list object, now [1, 2, 3, 4]
+```
+
+Why it matters: when two names point at the **same** list, mutating through one is
+visible through the other. They're **aliases** — two labels on one object.
+
+```python
+a = [1, 2, 3]
+b = a                 # b is NOT a copy — it's the same list
+b.append(99)
+print(a)              # [1, 2, 3, 99]  — a changed too!
+```
+
+`b = a` copies the *reference*, not the list. To get an independent copy, ask for
+one: `b = a.copy()` (or `b = a[:]`). Then mutating `b` leaves `a` alone. Rebinding
+never has this problem — `b = [4, 5, 6]` just moves `b`'s label and can't touch `a`.
+
+This is the single most common source of "why did my other variable change?" bugs,
+and it's everywhere in data work — a DataFrame handed to a function that mutates it
+surprises people for years. Learn to see it now.
+
+<LangContrast lang="js">
+Exactly JS's value-vs-reference story: `const b = a` aliases the array (same as JS
+objects/arrays), and `b.push(99)` shows up in `a`. Python's `.copy()` / `a[:]` is
+your `[...a]` or `a.slice()`. Numbers and strings are immutable in both languages, so
+this trap only springs on the mutable containers — lists, dicts, sets.
+</LangContrast>

@@ -1,0 +1,47 @@
+# Comprehensions
+
+A comprehension builds a list (or dict, or set) from an iterable in one expression. It's
+not a party trick — it's the *idiom*. You'll read it in nearly every real Python file, so
+learn to write and recognize it now.
+
+Start from the loop you already know:
+
+```python
+squares = []
+for n in range(5):
+    squares.append(n * n)
+```
+
+The comprehension says the same thing in one line — read it as "**`n*n` for each `n` in
+range(5)**":
+
+```python
+squares = [n * n for n in range(5)]      # [0, 1, 4, 9, 16]
+```
+
+Add a condition on the end to **filter** — "keep only the ones where…":
+
+```python
+evens = [n for n in range(10) if n % 2 == 0]     # [0, 2, 4, 6, 8]
+names = [w.upper() for w in words if len(w) > 3]  # transform AND filter
+```
+
+The shape is always `[EXPRESSION for ITEM in ITERABLE if CONDITION]` — the `if` is
+optional. Dict and set comprehensions use the same shape with braces:
+
+```python
+lengths = {w: len(w) for w in words}     # dict comprehension
+uniques = {n % 3 for n in range(10)}     # set comprehension → {0, 1, 2}
+```
+
+Reach for a comprehension when you're **building a collection by transforming or
+filtering another**. If the loop does something else (prints, calls an API, accumulates a
+single total), keep it a plain loop — clarity beats cleverness.
+
+<LangContrast lang="js">
+This is `arr.map(...)` and `.filter(...)` fused into syntax. `[n*n for n in nums]` is
+`nums.map(n => n*n)`; adding `if cond` is `.filter(...)`. Reading order differs — Python
+puts the *result expression first*, then the source, then the filter; JS chains
+left to right. Same power, and the dict-comprehension has no clean JS one-liner
+equivalent.
+</LangContrast>

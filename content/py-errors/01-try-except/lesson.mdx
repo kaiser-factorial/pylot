@@ -1,0 +1,50 @@
+# try / except
+
+Some errors you can't prevent — a user types nonsense, a file is missing, a number is
+zero. `try`/`except` lets you *catch* an exception and keep going instead of crashing.
+
+```python
+try:
+    n = int("not a number")     # raises ValueError
+except ValueError:
+    n = 0                        # runs only if a ValueError happened
+print(n)                         # 0
+```
+
+The `try` block holds the code that might fail. If it raises, Python jumps straight to the
+matching `except` block; if it doesn't, the `except` is skipped entirely. **Catch specific
+exception types**, not a bare `except:` — you want to handle the failure you expected, not
+silently swallow bugs you didn't:
+
+```python
+try:
+    value = data[key]
+except KeyError:
+    value = None                # handle the missing key
+```
+
+Two optional clauses complete the shape:
+
+- **`else`** runs only if the `try` block did *not* raise — put the "success" follow-up here.
+- **`finally`** runs *no matter what* — raised or not, caught or not. Cleanup goes here.
+
+```python
+try:
+    result = risky()
+except ValueError:
+    print("bad value")
+else:
+    print("worked:", result)    # only if no exception
+finally:
+    print("done")               # always
+```
+
+Catch narrow, handle deliberately. An empty `except: pass` is how bugs hide for months.
+
+<LangContrast lang="js">
+`try`/`catch` becomes `try`/`except`, and the block gets a colon and indentation instead of
+braces. The big difference: JS catches *one* thing (`catch (e)`) and you branch on the type
+inside; Python lets you write **multiple typed `except` clauses**, each catching a specific
+exception — cleaner than a chain of `if (e instanceof ...)`. And Python's `finally` is the
+same as JS's.
+</LangContrast>

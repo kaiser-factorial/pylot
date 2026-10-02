@@ -1,0 +1,140 @@
+exercises:
+  - id: py-collections/03-dicts/01-build-lookup
+    title: Build the lookup
+    kind: write-code
+    difficulty: 1
+    prompt: |
+      Create a dict `fuel` with keys `"jetA"` → `4200` and `"avgas"` → `900`.
+      Then add a `"total"` key equal to their sum (compute it, don't hardcode
+      `5100`), and print the total. Output: `5100`.
+    concepts: [dicts, printing]
+    starter_code: |
+      # fuel = ...
+    reference_solution: |
+      fuel = {"jetA": 4200, "avgas": 900}
+      fuel["total"] = fuel["jetA"] + fuel["avgas"]
+      print(fuel["total"])
+    checks:
+      - type: state
+        expr: 'fuel == {"jetA": 4200, "avgas": 900, "total": 5100}'
+      - type: ast
+        requires: [BinOp]
+        message: "compute the total by adding the two values, don't type 5100"
+    hints:
+      - "Dict literal: {\"jetA\": 4200, \"avgas\": 900}."
+      - "fuel[\"total\"] = fuel[\"jetA\"] + fuel[\"avgas\"]."
+
+  - id: py-collections/03-dicts/02-predict-get
+    title: "Predict: get vs bracket"
+    kind: predict-output
+    difficulty: 2
+    prompt: |
+      `.get` never raises; `in` checks keys. Predict all four lines. Note
+      `None` prints as `None`, and `"speed" in gauges` checks KEYS not values.
+    concepts: [dicts, none]
+    starter_code: |
+      gauges = {"speed": 250, "alt": 38000}
+      print(gauges.get("speed"))
+      print(gauges.get("heading"))
+      print(gauges.get("heading", 0))
+      print("alt" in gauges)
+    reference_solution: |
+      gauges = {"speed": 250, "alt": 38000}
+      print(gauges.get("speed"))
+      print(gauges.get("heading"))
+      print(gauges.get("heading", 0))
+      print("alt" in gauges)
+    checks:
+      - type: stdout
+        equals: |
+          250
+          None
+          0
+          True
+    hints:
+      - "\"heading\" isn't a key — .get with no default returns None."
+      - "The third call supplies 0 as the default, so it returns 0, not None."
+
+  - id: py-collections/03-dicts/03-fix-keyerror
+    title: "Fix: the missing key"
+    kind: fix-bug
+    difficulty: 2
+    prompt: |
+      This crashes with a KeyError because `"wifi"` isn't in the dict. The
+      intent: print the wifi status, treating a missing key as `"none"`.
+      Run it, read the traceback, then switch to a lookup that tolerates a
+      missing key. Output: `none`.
+    concepts: [dicts, errors-reading, none]
+    starter_code: |
+      cabin = {"seatbelts": "on", "lights": "dim"}
+      print(cabin["wifi"])
+    reference_solution: |
+      cabin = {"seatbelts": "on", "lights": "dim"}
+      print(cabin.get("wifi", "none"))
+    checks:
+      - type: stdout
+        equals: "none"
+      - type: ast
+        requires: [Attribute]
+        forbids: [Subscript]
+        message: "use .get() to tolerate the missing key — no bracket lookup"
+    hints:
+      - "Read the error: KeyError: 'wifi' — bracket access on a missing key raises."
+      - ".get(key, default) returns the default instead of raising."
+
+  - id: py-collections/03-dicts/04-predict-nested
+    title: "Predict: reaching into nested data"
+    kind: predict-output
+    difficulty: 3
+    prompt: |
+      A dict whose values are lists — the shape of nearly every dataset.
+      Reach in one bracket per level, and remember mutating an inner list
+      changes it in place. Predict all three lines.
+    concepts: [nesting, dicts, indexing]
+    starter_code: |
+      hangar = {"east": ["C172", "PA28"], "west": ["B58"]}
+      print(hangar["east"][1])
+      hangar["west"].append("SR22")
+      print(len(hangar["west"]))
+      print(hangar["east"][-1])
+    reference_solution: |
+      hangar = {"east": ["C172", "PA28"], "west": ["B58"]}
+      print(hangar["east"][1])
+      hangar["west"].append("SR22")
+      print(len(hangar["west"]))
+      print(hangar["east"][-1])
+    checks:
+      - type: stdout
+        equals: |
+          PA28
+          2
+          PA28
+    hints:
+      - "hangar[\"east\"] is a list; the [1] then indexes into THAT list."
+      - "The append grows the west list to two items; east is untouched."
+
+  - id: py-collections/03-dicts/05-parsons-roster
+    title: "Reorder: register the crew"
+    kind: parsons
+    difficulty: 2
+    prompt: |
+      These lines build a crew-role dict, add one role, promote the copilot,
+      and report. Order them so every name exists before it's used — and note
+      the promotion must land before the final print reads it back.
+    concepts: [dicts, unpacking]
+    reference_solution: |
+      roster = {"pilot": "Amelia", "copilot": "Bessie"}
+      roster["navigator"] = "Willa"
+      roster["copilot"] = "Raymonde"
+      print(f"crew size: {len(roster)}")
+      print(f"copilot: {roster['copilot']}")
+    checks:
+      - type: stdout
+        equals: |
+          crew size: 3
+          copilot: Raymonde
+      - type: state
+        expr: 'roster == {"pilot": "Amelia", "copilot": "Raymonde", "navigator": "Willa"}'
+    hints:
+      - "The dict must exist before you add navigator or promote the copilot."
+      - "The final line prints Raymonde, so the promotion happens before it."

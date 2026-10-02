@@ -15,3 +15,54 @@ chapters:
       - 01-strings
       - 02-truthiness
       - 03-conversion
+  - id: py-collections
+    title: "Ch. 2 — Collections"
+    dir: py-collections
+    lessons:
+      - 00-lists
+      - 01-slicing
+      - 02-tuples-unpacking
+      - 03-dicts
+      - 04-sets
+      - 05-mutation-aliasing
+      - 06-capstone
+  - id: py-flow
+    title: "Ch. 3 — Control flow"
+    dir: py-flow
+    lessons:
+      - 00-conditionals
+      - 01-for-loops
+      - 02-while-loops
+      - 03-enumerate-zip
+      - 04-comprehensions
+      - 05-capstone
+  - id: py-functions
+    title: "Ch. 4 — Functions & scope"
+    dir: py-functions
+    lessons:
+      - 00-def-return
+      - 01-arguments
+      - 02-args-kwargs
+      - 03-scope
+      - 04-lambdas-docstrings
+      - 05-capstone
+  - id: py-errors
+    title: "Ch. 5 — Errors, files, and the outside world"
+    dir: py-errors
+    lessons:
+      - 00-reading-tracebacks
+      - 01-try-except
+      - 02-raising
+      - 03-files-with
+      - 04-json-pathlib
+      - 05-capstone
+  - id: py-structure
+    title: "Ch. 6 — Structuring real programs"
+    dir: py-structure
+    lessons:
+      - 00-modules-imports
+      - 01-organizing-main
+      - 02-classes-reading
+      - 03-decorators-hints
+      - 04-asserts-testing
+      - 05-capstone

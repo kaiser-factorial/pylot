@@ -1,0 +1,33 @@
+# Lists
+
+A list is Python's workhorse sequence: ordered, mutable, holds anything.
+
+```python
+crew = ["ada", "grace", "margaret"]
+crew.append("katherine")      # grows in place
+first = crew[0]               # indexing starts at 0
+last = crew[-1]               # negative indices count from the end
+print(len(crew))              # length is len(), not a property
+```
+
+`crew[-1]` is the idiom to remember: `-1` is the last element, `-2` second-to-last.
+No `crew[len(crew) - 1]` gymnastics. Asking for an index that doesn't exist raises
+`IndexError` — loudly, immediately.
+
+`.append(x)` adds one element to the end. `.pop()` removes and *returns* the last
+element (or `.pop(i)` for position `i`). `in` asks about membership:
+
+```python
+"ada" in crew        # True
+"linus" in crew      # False
+```
+
+<LangContrast lang="js">
+Four renames and you're home: `arr.push(x)` → `lst.append(x)`, `arr.pop()` is the same,
+`arr.length` → `len(lst)`, `arr.includes(x)` → `x in lst`. The big win: negative
+indices actually work — `lst[-1]` instead of `arr[arr.length - 1]` (JS gives you
+`undefined` for `arr[-1]`; Python gives you the last element).
+</LangContrast>
+
+Lists print exactly as you'd write them: `['ada', 'grace']` — quotes and all. That's
+their `repr`, and it's what the workspace panel shows too.
